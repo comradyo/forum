@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"forum/forum/internal/utils"
+	log "github.com/sirupsen/logrus"
+	"os"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
+	application, err := utils.NewApp()
+	if err != nil {
+		log.Error("main err = ", err)
+		os.Exit(1)
+	}
+	err = application.Run()
+	if err != nil {
+		log.Error("main err = ", err)
+		os.Exit(1)
+	}
 }
