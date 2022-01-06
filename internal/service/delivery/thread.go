@@ -3,7 +3,6 @@ package delivery
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
-	"forum/forum/internal/utils"
 	"forum/forum/pkg/response"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -25,7 +24,7 @@ func NewThreadDelivery(useCase service.ThreadUseCaseInterface) *ThreadDelivery {
 func (d *ThreadDelivery) CreateThreadPosts(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	slugOrId := vars["slug_or_id"]
-	posts, err := utils.GetPostsFromRequest(r.Body)
+	posts, err := response.GetPostsFromRequest(r.Body)
 	if err != nil {
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}
@@ -59,7 +58,7 @@ func (d *ThreadDelivery) GetThreadDetails(w http.ResponseWriter, r *http.Request
 func (d *ThreadDelivery) UpdateThreadDetails(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	slugOrId := vars["slug_or_id"]
-	thread, err := utils.GetThreadFromRequest(r.Body)
+	thread, err := response.GetThreadFromRequest(r.Body)
 	if err != nil {
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}
@@ -114,7 +113,7 @@ func (d *ThreadDelivery) GetThreadPosts(w http.ResponseWriter, r *http.Request) 
 func (d *ThreadDelivery) VoteForThread(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	slugOdId := vars["slugOdId"]
-	vote, err := utils.GetVoteFromRequest(r.Body)
+	vote, err := response.GetVoteFromRequest(r.Body)
 	if err != nil {
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}

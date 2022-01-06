@@ -3,7 +3,6 @@ package delivery
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
-	"forum/forum/internal/utils"
 	"forum/forum/pkg/response"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -24,7 +23,7 @@ func NewUserDelivery(useCase service.UserUseCaseInterface) *UserDelivery {
 func (d *UserDelivery) CreateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nickname := vars["nickname"]
-	profile, err := utils.GetProfileFromRequest(r.Body)
+	profile, err := response.GetProfileFromRequest(r.Body)
 	if err != nil {
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}
@@ -57,7 +56,7 @@ func (d *UserDelivery) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 func (d *UserDelivery) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	nickname := vars["nickname"]
-	profile, err := utils.GetProfileFromRequest(r.Body)
+	profile, err := response.GetProfileFromRequest(r.Body)
 	if err != nil {
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}

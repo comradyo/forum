@@ -3,7 +3,6 @@ package delivery
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
-	"forum/forum/internal/utils"
 	"forum/forum/pkg/response"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -45,7 +44,7 @@ func (d *PostDelivery) GetPostDetails(w http.ResponseWriter, r *http.Request) {
 func (d *PostDelivery) UpdatePostDetails(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-	post, err := utils.GetPostFromRequest(r.Body)
+	post, err := response.GetPostFromRequest(r.Body)
 	if err != nil {
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}

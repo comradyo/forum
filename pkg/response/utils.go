@@ -1,4 +1,4 @@
-package utils
+package response
 
 import (
 	"forum/forum/internal/models"

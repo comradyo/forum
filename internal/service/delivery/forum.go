@@ -3,7 +3,6 @@ package delivery
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
-	"forum/forum/internal/utils"
 	"forum/forum/pkg/response"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -23,7 +22,7 @@ func NewForumDelivery(useCase service.ForumUseCaseInterface) *ForumDelivery {
 }
 
 func (d *ForumDelivery) CreateForum(w http.ResponseWriter, r *http.Request) {
-	forum, err := utils.GetForumFromRequest(r.Body)
+	forum, err := response.GetForumFromRequest(r.Body)
 	if err != nil {
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}
@@ -57,7 +56,7 @@ func (d *ForumDelivery) GetForumDetails(w http.ResponseWriter, r *http.Request) 
 func (d *ForumDelivery) CreateForumThread(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	slug := vars["slug"]
-	thread, err := utils.GetThreadFromRequest(r.Body)
+	thread, err := response.GetThreadFromRequest(r.Body)
 	if err != nil {
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}
