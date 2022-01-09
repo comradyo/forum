@@ -3,6 +3,7 @@ package delivery
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
+	log "forum/forum/pkg/logger"
 	"forum/forum/pkg/response"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -21,15 +22,19 @@ func NewUserDelivery(useCase service.UserUseCaseInterface) *UserDelivery {
 }
 
 func (d *UserDelivery) CreateUser(w http.ResponseWriter, r *http.Request) {
+	message := userLogMessage + "CreateUser:"
+	log.Info(message + "started")
 	vars := mux.Vars(r)
 	nickname := vars["nickname"]
 	profile, err := response.GetProfileFromRequest(r.Body)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}
 	profile.Nickname = nickname
 	newUser, err := d.useCase.CreateUser(profile)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		if err == models.ErrUserExists {
 			response.SendResponse(w, http.StatusConflict, newUser)
 		} else {
@@ -37,13 +42,17 @@ func (d *UserDelivery) CreateUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	response.SendResponse(w, http.StatusCreated, newUser)
+	log.Info(message + "ended")
 }
 
 func (d *UserDelivery) GetUserProfile(w http.ResponseWriter, r *http.Request) {
+	message := userLogMessage + "GetUserProfile:"
+	log.Info(message + "started")
 	vars := mux.Vars(r)
 	nickname := vars["nickname"]
 	profile, err := d.useCase.GetUserProfile(nickname)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		if err == models.ErrUserNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
 		} else {
@@ -51,18 +60,23 @@ func (d *UserDelivery) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	response.SendResponse(w, http.StatusOK, profile)
+	log.Info(message + "ended")
 }
 
 func (d *UserDelivery) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
+	message := userLogMessage + "UpdateUserProfile:"
+	log.Info(message + "started")
 	vars := mux.Vars(r)
 	nickname := vars["nickname"]
 	profile, err := response.GetProfileFromRequest(r.Body)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}
 	profile.Nickname = nickname
 	updatedProfile, err := d.useCase.UpdateUserProfile(profile)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		if err == models.ErrUserNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
 		} else if err == models.ErrProfileUpdateConflict {
@@ -72,4 +86,5 @@ func (d *UserDelivery) UpdateUserProfile(w http.ResponseWriter, r *http.Request)
 		}
 	}
 	response.SendResponse(w, http.StatusOK, updatedProfile)
+	log.Info(message + "ended")
 }

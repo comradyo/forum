@@ -44,15 +44,15 @@ func easyjson9e1087fdDecodeForumForumInternalModels(in *jlexer.Lexer, out *Users
 				in.Delim('[')
 				if out.Users == nil {
 					if !in.IsDelim(']') {
-						out.Users = make([]Users, 0, 2)
+						out.Users = make([]User, 0, 1)
 					} else {
-						out.Users = []Users{}
+						out.Users = []User{}
 					}
 				} else {
 					out.Users = (out.Users)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v1 Users
+					var v1 User
 					(v1).UnmarshalEasyJSON(in)
 					out.Users = append(out.Users, v1)
 					in.WantComma()

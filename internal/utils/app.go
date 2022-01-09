@@ -4,8 +4,9 @@ import (
 	"forum/forum/internal/service/delivery"
 	"forum/forum/internal/service/repository"
 	"forum/forum/internal/service/usecase"
+	log "forum/forum/pkg/logger"
 	"github.com/jackc/pgx"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -42,10 +43,10 @@ func NewApp() (*App, error) {
 	threadR := repository.NewThreadRepository(db)
 	userR := repository.NewUserRepository(db)
 
-	forumUC := usecase.NewForumUseCase(forumR)
-	postUC := usecase.NewPostUseCase(postR)
+	forumUC := usecase.NewForumUseCase(forumR, userR)
+	postUC := usecase.NewPostUseCase(postR, userR, forumR, threadR)
 	serviceUC := usecase.NewServiceUseCase(serviceR)
-	threadUC := usecase.NewThreadUseCase(threadR)
+	threadUC := usecase.NewThreadUseCase(threadR, userR)
 	userUC := usecase.NewUserUseCase(userR)
 
 	forumD := delivery.NewForumDelivery(forumUC)
@@ -68,6 +69,8 @@ func (a *App) Run() error {
 	if a.db != nil {
 		defer a.db.Close()
 	}
+	log.Init(logrus.DebugLevel)
+	log.Info("app started")
 	r := NewRouterForApp(a)
 	port := "5050"
 	err := http.ListenAndServe(":"+port, r)

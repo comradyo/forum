@@ -8,7 +8,7 @@ type User struct {
 }
 
 type Users struct {
-	Users []Users `json:"users"`
+	Users []User `json:"users"`
 }
 
 type UserUpdate struct {

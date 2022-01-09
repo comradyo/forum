@@ -4,6 +4,7 @@ import "errors"
 
 var (
 	ErrJSONDecoding          = errors.New("json decoding error")
+	ErrPostgres              = errors.New("postgres error")
 	ErrUserExists            = errors.New("user already exists")
 	ErrUserNotFound          = errors.New("user not found")
 	ErrProfileUpdateConflict = errors.New("can't update profile")

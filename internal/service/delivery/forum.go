@@ -3,10 +3,10 @@ package delivery
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
+	log "forum/forum/pkg/logger"
 	"forum/forum/pkg/response"
 	"github.com/gorilla/mux"
 	"net/http"
-	"strconv"
 )
 
 const forumLogMessage = "delivery:forum:"
@@ -22,12 +22,16 @@ func NewForumDelivery(useCase service.ForumUseCaseInterface) *ForumDelivery {
 }
 
 func (d *ForumDelivery) CreateForum(w http.ResponseWriter, r *http.Request) {
+	message := forumLogMessage + "CreateForum:"
+	log.Info(message + "started")
 	forum, err := response.GetForumFromRequest(r.Body)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}
 	newForum, err := d.useCase.CreateForum(forum)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		if err == models.ErrForumExists {
 			response.SendResponse(w, http.StatusConflict, newForum)
 		} else if err == models.ErrUserNotFound {
@@ -37,13 +41,17 @@ func (d *ForumDelivery) CreateForum(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	response.SendResponse(w, http.StatusCreated, newForum)
+	log.Info(message + "ended")
 }
 
 func (d *ForumDelivery) GetForumDetails(w http.ResponseWriter, r *http.Request) {
+	message := forumLogMessage + "GetForumDetails:"
+	log.Info(message + "started")
 	vars := mux.Vars(r)
 	slug := vars["slug"]
 	forum, err := d.useCase.GetForumDetails(slug)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		if err == models.ErrForumNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
 		} else {
@@ -51,17 +59,22 @@ func (d *ForumDelivery) GetForumDetails(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	response.SendResponse(w, http.StatusOK, forum)
+	log.Info(message + "ended")
 }
 
 func (d *ForumDelivery) CreateForumThread(w http.ResponseWriter, r *http.Request) {
+	message := forumLogMessage + "CreateForumThread:"
+	log.Info(message + "started")
 	vars := mux.Vars(r)
 	slug := vars["slug"]
 	thread, err := response.GetThreadFromRequest(r.Body)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 	}
 	newThread, err := d.useCase.CreateForumThread(slug, thread)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		if err == models.ErrThreadExists {
 			response.SendResponse(w, http.StatusConflict, newThread)
 		} else if err == models.ErrUserNotFound || err == models.ErrForumNotFound {
@@ -71,35 +84,32 @@ func (d *ForumDelivery) CreateForumThread(w http.ResponseWriter, r *http.Request
 		}
 	}
 	response.SendResponse(w, http.StatusCreated, newThread)
+	log.Info(message + "started")
 }
 
 func (d *ForumDelivery) GetForumUsers(w http.ResponseWriter, r *http.Request) {
+	message := forumLogMessage + "GetForumUsers:"
+	log.Info(message + "started")
 	vars := mux.Vars(r)
 	slug := vars["slug"]
 
 	q := r.URL.Query()
-	var limit int32
+	var limit string
 	var since string
-	var desc bool
-
+	var desc string
 	if len(q["limit"]) > 0 {
-		limitInt, _ := strconv.Atoi(q["limit"][0])
-		limit = int32(limitInt)
+		limit = q["limit"][0]
 	}
 	if len(q["since"]) > 0 {
 		since = q["since"][0]
 	}
 	if len(q["desc"]) > 0 {
-		descStr := q["desc"][0]
-		if descStr == "true" {
-			desc = true
-		} else {
-			desc = false
-		}
+		desc = q["desc"][0]
 	}
 
 	users, err := d.useCase.GetForumUsers(slug, limit, since, desc)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		if err == models.ErrForumNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
 		} else {
@@ -107,35 +117,32 @@ func (d *ForumDelivery) GetForumUsers(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	response.SendResponse(w, http.StatusOK, users)
+	log.Info(message + "started")
 }
 
 func (d *ForumDelivery) GetForumThreads(w http.ResponseWriter, r *http.Request) {
+	message := forumLogMessage + "GetForumThreads:"
+	log.Info(message + "started")
 	vars := mux.Vars(r)
 	slug := vars["slug"]
 
 	q := r.URL.Query()
-	var limit int32
+	var limit string
 	var since string
-	var desc bool
-
+	var desc string
 	if len(q["limit"]) > 0 {
-		limitInt, _ := strconv.Atoi(q["limit"][0])
-		limit = int32(limitInt)
+		limit = q["limit"][0]
 	}
 	if len(q["since"]) > 0 {
 		since = q["since"][0]
 	}
 	if len(q["desc"]) > 0 {
-		descStr := q["desc"][0]
-		if descStr == "true" {
-			desc = true
-		} else {
-			desc = false
-		}
+		desc = q["desc"][0]
 	}
 
 	threads, err := d.useCase.GetForumThreads(slug, limit, since, desc)
 	if err != nil {
+		log.Error(message+"error = ", err)
 		if err == models.ErrForumNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
 		} else {
@@ -143,4 +150,5 @@ func (d *ForumDelivery) GetForumThreads(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	response.SendResponse(w, http.StatusOK, threads)
+	log.Info(message + "started")
 }
