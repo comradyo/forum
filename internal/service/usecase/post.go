@@ -20,7 +20,8 @@ func NewPostUseCase(
 	repository service.PostRepositoryInterface,
 	userRepo service.UserRepositoryInterface,
 	forumRepo service.ForumRepositoryInterface,
-	threadRepo service.ThreadRepositoryInterface) *PostUseCase {
+	threadRepo service.ThreadRepositoryInterface,
+) *PostUseCase {
 	return &PostUseCase{
 		repository: repository,
 		userRepo:   userRepo,

@@ -3,6 +3,7 @@ package usecase
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
+	"github.com/gofrs/uuid"
 )
 
 const forumLogMessage = "usecase:forum:"
@@ -10,12 +11,14 @@ const forumLogMessage = "usecase:forum:"
 type ForumUseCase struct {
 	repository service.ForumRepositoryInterface
 	userRepo   service.UserRepositoryInterface
+	threadRepo service.ThreadRepositoryInterface
 }
 
-func NewForumUseCase(repository service.ForumRepositoryInterface, userRepo service.UserRepositoryInterface) *ForumUseCase {
+func NewForumUseCase(repository service.ForumRepositoryInterface, userRepo service.UserRepositoryInterface, threadRepo service.ThreadRepositoryInterface) *ForumUseCase {
 	return &ForumUseCase{
 		repository: repository,
 		userRepo:   userRepo,
+		threadRepo: threadRepo,
 	}
 }
 
@@ -24,7 +27,19 @@ func (u *ForumUseCase) CreateForum(forum *models.Forum) (*models.Forum, error) {
 	if err != nil {
 		return nil, err
 	}
-	//TODO: Проверка, пустой ли слаг. Если пустой, то сгенерировать его
+	if forum.Slug != "" {
+		oldForum, err := u.GetForumDetails(forum.Slug)
+		if err == nil {
+			return oldForum, models.ErrForumExists
+		} else if err == models.ErrForumNotFound {
+			return u.repository.CreateForum(forum)
+		} else {
+			return nil, err
+		}
+	} else {
+		slug, _ := uuid.NewV4()
+		forum.Slug = slug.String()
+	}
 	return u.repository.CreateForum(forum)
 }
 
@@ -42,13 +57,23 @@ func (u *ForumUseCase) CreateForumThread(slug string, thread *models.Thread) (*m
 		return nil, err
 	}
 	thread.Forum = slug
-	//TODO: Слаг для треда
-	//thread.Slug = "123"
+	if thread.Slug != "" {
+		oldThread, err := u.threadRepo.GetThreadDetails(thread.Slug)
+		if err == nil {
+			return oldThread, models.ErrThreadExists
+		} else if err == models.ErrThreadNotFound {
+			return u.repository.CreateForumThread(thread)
+		} else {
+			return nil, err
+		}
+	} else {
+		slug, _ := uuid.NewV4()
+		thread.Slug = slug.String()
+	}
 	return u.repository.CreateForumThread(thread)
 }
 
 func (u *ForumUseCase) GetForumUsers(slug string, limit string, since string, desc string) (*models.Users, error) {
-	//TODO: мб лишние действия
 	_, err := u.repository.GetForumDetails(slug)
 	if err != nil {
 		return nil, err
