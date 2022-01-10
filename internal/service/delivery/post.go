@@ -41,13 +41,16 @@ func (d *PostDelivery) GetPostDetails(w http.ResponseWriter, r *http.Request) {
 		log.Error(message+"error = ", err)
 		if err == models.ErrPostNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	//TODO: Возможно, здесь будет другая структура
 	response.SendResponse(w, http.StatusOK, postFull)
 	log.Info(message + "ended")
+	return
 }
 
 func (d *PostDelivery) UpdatePostDetails(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +62,7 @@ func (d *PostDelivery) UpdatePostDetails(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return
 	}
 	idInt, _ := strconv.Atoi(id)
 	post.Id = int64(idInt)
@@ -67,10 +71,13 @@ func (d *PostDelivery) UpdatePostDetails(w http.ResponseWriter, r *http.Request)
 		log.Error(message+"error = ", err)
 		if err == models.ErrPostNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusOK, updatedPost)
 	log.Info(message + "ended")
+	return
 }

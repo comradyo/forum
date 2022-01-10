@@ -71,3 +71,7 @@ CREATE UNLOGGED TABLE "forum_user"
     "user"      citext references "user"(nickname) on delete cascade not null,
     UNIQUE (forum, "user")
 );
+
+select * from "user";
+
+select nickname, fullname, about, email from "user" where nickname = 'test_user123';

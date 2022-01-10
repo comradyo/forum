@@ -30,6 +30,7 @@ func (d *UserDelivery) CreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return
 	}
 	profile.Nickname = nickname
 	newUser, err := d.useCase.CreateUser(profile)
@@ -37,12 +38,15 @@ func (d *UserDelivery) CreateUser(w http.ResponseWriter, r *http.Request) {
 		log.Error(message+"error = ", err)
 		if err == models.ErrUserExists {
 			response.SendResponse(w, http.StatusConflict, newUser)
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusCreated, newUser)
 	log.Info(message + "ended")
+	return
 }
 
 func (d *UserDelivery) GetUserProfile(w http.ResponseWriter, r *http.Request) {
@@ -55,12 +59,15 @@ func (d *UserDelivery) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 		log.Error(message+"error = ", err)
 		if err == models.ErrUserNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusOK, profile)
 	log.Info(message + "ended")
+	return
 }
 
 func (d *UserDelivery) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
@@ -72,6 +79,7 @@ func (d *UserDelivery) UpdateUserProfile(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return
 	}
 	profile.Nickname = nickname
 	updatedProfile, err := d.useCase.UpdateUserProfile(profile)
@@ -79,12 +87,16 @@ func (d *UserDelivery) UpdateUserProfile(w http.ResponseWriter, r *http.Request)
 		log.Error(message+"error = ", err)
 		if err == models.ErrUserNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else if err == models.ErrProfileUpdateConflict {
 			response.SendResponse(w, http.StatusConflict, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusOK, updatedProfile)
 	log.Info(message + "ended")
+	return
 }

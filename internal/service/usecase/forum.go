@@ -4,6 +4,7 @@ import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
 	"github.com/gofrs/uuid"
+	"time"
 )
 
 const forumLogMessage = "usecase:forum:"
@@ -57,6 +58,7 @@ func (u *ForumUseCase) CreateForumThread(slug string, thread *models.Thread) (*m
 		return nil, err
 	}
 	thread.Forum = slug
+	thread.Created = time.Now()
 	if thread.Slug != "" {
 		oldThread, err := u.threadRepo.GetThreadDetails(thread.Slug)
 		if err == nil {

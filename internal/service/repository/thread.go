@@ -37,6 +37,9 @@ func getSlugOrId(slugOrId string) (bool, int64, string) {
 
 func (r *ThreadRepository) CreateThreadPosts(slugOrId string, posts *models.Posts) (*models.Posts, error) {
 	isId, idInt64, slug := getSlugOrId(slugOrId)
+	_ = isId
+	_ = idInt64
+	_ = slug
 
 	return nil, nil
 }
@@ -144,6 +147,9 @@ func (r *ThreadRepository) UpdateThreadDetails(slugOrId string, thread *models.T
 
 func (r *ThreadRepository) GetThreadPosts(slugOrId string, limit string, since string, sort string, desc string) (*models.Posts, error) {
 	isId, idInt64, slug := getSlugOrId(slugOrId)
+	_ = isId
+	_ = idInt64
+	_ = slug
 
 	return nil, nil
 }

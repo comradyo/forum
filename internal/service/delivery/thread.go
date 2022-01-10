@@ -30,16 +30,20 @@ func (d *ThreadDelivery) CreateThreadPosts(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return
 	}
 	newPosts, err := d.useCase.CreateThreadPosts(slugOrId, posts)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		if err == models.ErrThreadNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else if err == models.ErrPostNotFound {
 			response.SendResponse(w, http.StatusConflict, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusCreated, newPosts)
@@ -56,8 +60,10 @@ func (d *ThreadDelivery) GetThreadDetails(w http.ResponseWriter, r *http.Request
 		log.Error(message+"error = ", err)
 		if err == models.ErrThreadNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusOK, thread)
@@ -73,18 +79,22 @@ func (d *ThreadDelivery) UpdateThreadDetails(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return
 	}
 	updatedThread, err := d.useCase.UpdateThreadDetails(slugOrId, thread)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		if err == models.ErrThreadNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusOK, updatedThread)
 	log.Info(message + "ended")
+	return
 }
 
 func (d *ThreadDelivery) GetThreadPosts(w http.ResponseWriter, r *http.Request) {
@@ -116,12 +126,15 @@ func (d *ThreadDelivery) GetThreadPosts(w http.ResponseWriter, r *http.Request) 
 		log.Error(message+"error = ", err)
 		if err == models.ErrThreadNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusOK, posts)
 	log.Info(message + "ended")
+	return
 }
 
 func (d *ThreadDelivery) VoteForThread(w http.ResponseWriter, r *http.Request) {
@@ -133,16 +146,20 @@ func (d *ThreadDelivery) VoteForThread(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return
 	}
 	thread, err := d.useCase.VoteForThread(slugOdId, vote)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		if err == models.ErrThreadNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusOK, thread)
 	log.Info(message + "ended")
+	return
 }

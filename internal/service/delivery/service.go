@@ -27,9 +27,11 @@ func (d *ServiceDelivery) Clear(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return
 	}
 	response.SendResponse(w, http.StatusOK, nil)
 	log.Info(message + "ended")
+	return
 }
 
 func (d *ServiceDelivery) GetStatus(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +41,9 @@ func (d *ServiceDelivery) GetStatus(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return
 	}
 	response.SendResponse(w, http.StatusOK, status)
 	log.Info(message + "ended")
+	return
 }

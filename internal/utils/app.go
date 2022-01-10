@@ -21,9 +21,9 @@ type App struct {
 
 func NewApp() (*App, error) {
 	config := pgx.ConnConfig{
-		User:                 "docker",
-		Database:             "docker",
-		Password:             "docker",
+		User:                 "postgres",
+		Database:             "postgres",
+		Password:             "password",
 		PreferSimpleProtocol: false,
 	}
 	connPoolConfig := pgx.ConnPoolConfig{

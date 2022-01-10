@@ -70,8 +70,8 @@ func (r *ForumRepository) GetForumDetails(slug string) (*models.Forum, error) {
 
 func (r *ForumRepository) CreateForumThread(thread *models.Thread) (*models.Thread, error) {
 	//TODO: Created либо автоматическим сделать, либо самому проставлять в usecase
-	query := `insert into "thread" (title, author, forum, message, slug) values ($1, $2, $3, $4, $5) returning id`
-	rows, err := r.db.Query(query, thread.Title, thread.Author, thread.Forum, thread.Message, thread.Slug)
+	query := `insert into "thread" (title, author, forum, message, slug, created) values ($1, $2, $3, $4, $5, $6) returning id`
+	rows, err := r.db.Query(query, thread.Title, thread.Author, thread.Forum, thread.Message, thread.Slug, thread.Created)
 	if err != nil {
 		rows.Close()
 		foundThread := &models.Thread{}

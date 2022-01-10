@@ -28,19 +28,19 @@ func (r *ServiceRepository) Clear() error {
 
 func (r *ServiceRepository) GetStatus() (*models.Status, error) {
 	status := &models.Status{}
-	err := r.db.QueryRow(`select (*) count from "user"`).Scan(&status.User)
+	err := r.db.QueryRow(`select count(*) from "user"`).Scan(&status.User)
 	if err != nil {
 		return nil, models.ErrPostgres
 	}
-	err = r.db.QueryRow(`select (*) count from forum`).Scan(&status.Forum)
+	err = r.db.QueryRow(`select count(*) from forum`).Scan(&status.Forum)
 	if err != nil {
 		return nil, models.ErrPostgres
 	}
-	err = r.db.QueryRow(`select (*) count from thread`).Scan(&status.Thread)
+	err = r.db.QueryRow(`select count(*) from thread`).Scan(&status.Thread)
 	if err != nil {
 		return nil, models.ErrPostgres
 	}
-	err = r.db.QueryRow(`select (*) count from post`).Scan(&status.Post)
+	err = r.db.QueryRow(`select count(*) from post`).Scan(&status.Post)
 	if err != nil {
 		return nil, models.ErrPostgres
 	}

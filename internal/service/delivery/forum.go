@@ -28,20 +28,25 @@ func (d *ForumDelivery) CreateForum(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return
 	}
 	newForum, err := d.useCase.CreateForum(forum)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		if err == models.ErrForumExists {
 			response.SendResponse(w, http.StatusConflict, newForum)
+			return
 		} else if err == models.ErrUserNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusCreated, newForum)
 	log.Info(message + "ended")
+	return
 }
 
 func (d *ForumDelivery) GetForumDetails(w http.ResponseWriter, r *http.Request) {
@@ -54,12 +59,15 @@ func (d *ForumDelivery) GetForumDetails(w http.ResponseWriter, r *http.Request) 
 		log.Error(message+"error = ", err)
 		if err == models.ErrForumNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusOK, forum)
 	log.Info(message + "ended")
+	return
 }
 
 func (d *ForumDelivery) CreateForumThread(w http.ResponseWriter, r *http.Request) {
@@ -71,20 +79,25 @@ func (d *ForumDelivery) CreateForumThread(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return
 	}
 	newThread, err := d.useCase.CreateForumThread(slug, thread)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		if err == models.ErrThreadExists {
 			response.SendResponse(w, http.StatusConflict, newThread)
+			return
 		} else if err == models.ErrUserNotFound || err == models.ErrForumNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusCreated, newThread)
 	log.Info(message + "started")
+	return
 }
 
 func (d *ForumDelivery) GetForumUsers(w http.ResponseWriter, r *http.Request) {
@@ -112,12 +125,15 @@ func (d *ForumDelivery) GetForumUsers(w http.ResponseWriter, r *http.Request) {
 		log.Error(message+"error = ", err)
 		if err == models.ErrForumNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusOK, users)
 	log.Info(message + "started")
+	return
 }
 
 func (d *ForumDelivery) GetForumThreads(w http.ResponseWriter, r *http.Request) {
@@ -145,10 +161,13 @@ func (d *ForumDelivery) GetForumThreads(w http.ResponseWriter, r *http.Request) 
 		log.Error(message+"error = ", err)
 		if err == models.ErrForumNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
+			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return
 		}
 	}
 	response.SendResponse(w, http.StatusOK, threads)
 	log.Info(message + "started")
+	return
 }
