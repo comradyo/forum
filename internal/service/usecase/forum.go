@@ -3,6 +3,7 @@ package usecase
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
+	log "forum/forum/pkg/logger"
 	"github.com/gofrs/uuid"
 	"time"
 )
@@ -49,16 +50,17 @@ func (u *ForumUseCase) GetForumDetails(slug string) (*models.Forum, error) {
 }
 
 func (u *ForumUseCase) CreateForumThread(slug string, thread *models.Thread) (*models.Thread, error) {
-	_, err := u.userRepo.GetUserProfile(thread.Author)
+	_, err := u.repository.GetForumDetails(slug)
 	if err != nil {
 		return nil, err
 	}
-	_, err = u.repository.GetForumDetails(slug)
+	_, err = u.userRepo.GetUserProfile(thread.Author)
 	if err != nil {
 		return nil, err
 	}
 	thread.Forum = slug
 	thread.Created = time.Now()
+	log.Debug(thread.Slug)
 	if thread.Slug != "" {
 		oldThread, err := u.threadRepo.GetThreadDetails(thread.Slug)
 		if err == nil {

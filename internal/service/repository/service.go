@@ -2,6 +2,7 @@ package repository
 
 import (
 	"forum/forum/internal/models"
+
 	"github.com/jackc/pgx"
 )
 
@@ -17,32 +18,34 @@ func NewServiceRepository(db *pgx.ConnPool) *ServiceRepository {
 	}
 }
 
+//TODO: Проверить
 func (r *ServiceRepository) Clear() error {
 	query := `truncate forum_user, vote, post, thread, forum, "user"`
 	_, err := r.db.Exec(query)
 	if err != nil {
-		return models.ErrPostgres
+		return models.ErrDatabase
 	}
 	return nil
 }
 
+//TODO: Проверить
 func (r *ServiceRepository) GetStatus() (*models.Status, error) {
 	status := &models.Status{}
 	err := r.db.QueryRow(`select count(*) from "user"`).Scan(&status.User)
 	if err != nil {
-		return nil, models.ErrPostgres
+		return nil, models.ErrDatabase
 	}
 	err = r.db.QueryRow(`select count(*) from forum`).Scan(&status.Forum)
 	if err != nil {
-		return nil, models.ErrPostgres
+		return nil, models.ErrDatabase
 	}
 	err = r.db.QueryRow(`select count(*) from thread`).Scan(&status.Thread)
 	if err != nil {
-		return nil, models.ErrPostgres
+		return nil, models.ErrDatabase
 	}
 	err = r.db.QueryRow(`select count(*) from post`).Scan(&status.Post)
 	if err != nil {
-		return nil, models.ErrPostgres
+		return nil, models.ErrDatabase
 	}
 	return status, nil
 }

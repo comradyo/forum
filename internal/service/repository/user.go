@@ -2,9 +2,10 @@ package repository
 
 import (
 	"forum/forum/internal/models"
+	"strings"
+
 	"github.com/jackc/pgx"
 	_ "github.com/jackc/pgx/stdlib"
-	"strings"
 )
 
 const userLogMessage = "repository:user:"
@@ -28,11 +29,11 @@ func (r *UserRepository) CreateUser(profile *models.User) (*models.User, error) 
 			query := `insert into "user" (nickname, fullname, about, email) values ($1, $2, $3, $4)`
 			_, err := r.db.Exec(query, profile.Nickname, profile.Fullname, profile.About, profile.Email)
 			if err != nil {
-				return nil, models.ErrPostgres
+				return nil, models.ErrDatabase
 			}
 			return profile, nil
 		} else {
-			return nil, models.ErrPostgres
+			return nil, models.ErrDatabase
 		}
 	} else {
 		return oldProfile, models.ErrUserExists
@@ -47,7 +48,7 @@ func (r *UserRepository) GetUserProfile(nickname string) (*models.User, error) {
 		if err == pgx.ErrNoRows {
 			return nil, models.ErrUserNotFound
 		} else {
-			return nil, models.ErrPostgres
+			return nil, models.ErrDatabase
 		}
 	}
 	return foundProfile, nil
@@ -61,7 +62,7 @@ func (r *UserRepository) UpdateUserProfile(profile *models.User) (*models.User, 
 		if strings.Contains(err.Error(), "duplicate") {
 			return nil, models.ErrProfileUpdateConflict
 		} else {
-			return nil, models.ErrPostgres
+			return nil, models.ErrDatabase
 		}
 	}
 	return updatedProfile, nil

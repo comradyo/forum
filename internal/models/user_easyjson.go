@@ -115,98 +115,7 @@ func (v *Users) UnmarshalJSON(data []byte) error {
 func (v *Users) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson9e1087fdDecodeForumForumInternalModels(l, v)
 }
-func easyjson9e1087fdDecodeForumForumInternalModels1(in *jlexer.Lexer, out *UserUpdate) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeFieldName(false)
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "fullname":
-			out.Fullname = string(in.String())
-		case "about":
-			out.About = string(in.String())
-		case "email":
-			out.Email = string(in.String())
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson9e1087fdEncodeForumForumInternalModels1(out *jwriter.Writer, in UserUpdate) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	if in.Fullname != "" {
-		const prefix string = ",\"fullname\":"
-		first = false
-		out.RawString(prefix[1:])
-		out.String(string(in.Fullname))
-	}
-	if in.About != "" {
-		const prefix string = ",\"about\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.About))
-	}
-	if in.Email != "" {
-		const prefix string = ",\"email\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Email))
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v UserUpdate) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson9e1087fdEncodeForumForumInternalModels1(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v UserUpdate) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson9e1087fdEncodeForumForumInternalModels1(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *UserUpdate) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson9e1087fdDecodeForumForumInternalModels1(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *UserUpdate) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson9e1087fdDecodeForumForumInternalModels1(l, v)
-}
-func easyjson9e1087fdDecodeForumForumInternalModels2(in *jlexer.Lexer, out *User) {
+func easyjson9e1087fdDecodeForumForumInternalModels1(in *jlexer.Lexer, out *User) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -243,7 +152,7 @@ func easyjson9e1087fdDecodeForumForumInternalModels2(in *jlexer.Lexer, out *User
 		in.Consumed()
 	}
 }
-func easyjson9e1087fdEncodeForumForumInternalModels2(out *jwriter.Writer, in User) {
+func easyjson9e1087fdEncodeForumForumInternalModels1(out *jwriter.Writer, in User) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -279,23 +188,23 @@ func easyjson9e1087fdEncodeForumForumInternalModels2(out *jwriter.Writer, in Use
 // MarshalJSON supports json.Marshaler interface
 func (v User) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson9e1087fdEncodeForumForumInternalModels2(&w, v)
+	easyjson9e1087fdEncodeForumForumInternalModels1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v User) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson9e1087fdEncodeForumForumInternalModels2(w, v)
+	easyjson9e1087fdEncodeForumForumInternalModels1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *User) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson9e1087fdDecodeForumForumInternalModels2(&r, v)
+	easyjson9e1087fdDecodeForumForumInternalModels1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *User) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson9e1087fdDecodeForumForumInternalModels2(l, v)
+	easyjson9e1087fdDecodeForumForumInternalModels1(l, v)
 }

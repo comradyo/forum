@@ -3,22 +3,18 @@ package models
 import "time"
 
 type Post struct {
-	Id       int64     `json:"id,omitempty"`
-	Parent   int64     `json:"parent,omitempty"`
+	Id       int64     `json:"id"`
+	Parent   int64     `json:"parent"`
 	Author   string    `json:"author"`
 	Message  string    `json:"message"`
-	IsEdited bool      `json:"isEdited,omitempty"`
-	Forum    string    `json:"forum,omitempty"`
-	Thread   int32     `json:"thread,omitempty"`
-	Created  time.Time `json:"created,omitempty"`
+	IsEdited bool      `json:"isEdited"`
+	Forum    string    `json:"forum"`
+	Thread   int32     `json:"thread"`
+	Created  time.Time `json:"created"`
 }
 
 type Posts struct {
 	Posts []Post `json:"posts"`
-}
-
-type PostUpdate struct {
-	Message string `json:"message,omitempty"`
 }
 
 type PostFull struct {

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"database/sql"
 	"forum/forum/internal/models"
 	"github.com/jackc/pgx"
 )
@@ -19,92 +18,57 @@ func NewForumRepository(db *pgx.ConnPool) *ForumRepository {
 }
 
 func (r *ForumRepository) CreateForum(forum *models.Forum) (*models.Forum, error) {
-	query := `insert into "forum" (title, user, slug) values ($1, $2, $3)`
-	_, err := r.db.Exec(query, forum.Title, forum.User, forum.Slug)
+	query := `insert into "forum" (title, "user", slug) values ($1, $2, $3) returning title, "user", slug, posts, threads`
+	err := r.db.QueryRow(query, forum.Title, forum.User, forum.Slug).Scan(
+		&forum.Title,
+		&forum.User,
+		&forum.Slug,
+		&forum.Posts,
+		&forum.Threads,
+	)
 	if err != nil {
-		foundForum := &models.Forum{}
-		query = `select (title, user, slug, posts, threads) from "forum" where slug = $1`
-		err := r.db.QueryRow(query, forum.Slug).Scan(
-			&foundForum.Title,
-			&foundForum.User,
-			&foundForum.Slug,
-			&foundForum.Posts,
-			&foundForum.Threads,
-		)
-		if err != nil {
-			return nil, models.ErrPostgres
-		}
-		return foundForum, models.ErrForumExists
+		return nil, models.ErrDatabase
 	}
 	return forum, nil
 }
 
 func (r *ForumRepository) GetForumDetails(slug string) (*models.Forum, error) {
-	query := `select (title, user, slug, posts, threads) from "forum" where slug = $1`
-	rows, err := r.db.Query(query, slug)
+	query := `select title, "user", slug, posts, threads from "forum" where slug = $1`
+	foundForum := &models.Forum{}
+	err := r.db.QueryRow(query, slug).Scan(&foundForum.Title, &foundForum.User, &foundForum.Slug, &foundForum.Posts, &foundForum.Threads)
 	if err != nil {
-		rows.Close()
-		if err == sql.ErrNoRows {
+		if err == pgx.ErrNoRows {
 			return nil, models.ErrForumNotFound
 		} else {
-			return nil, models.ErrPostgres
+			return nil, models.ErrDatabase
 		}
 	}
-	foundForum := &models.Forum{}
-	if rows.Next() {
-		err = rows.Scan(
-			&foundForum.Title,
-			&foundForum.User,
-			&foundForum.Slug,
-			&foundForum.Posts,
-			&foundForum.Threads,
-		)
-		if err != nil {
-			rows.Close()
-			return nil, models.ErrPostgres
-		}
-	}
-	rows.Close()
 	return foundForum, nil
 }
 
 func (r *ForumRepository) CreateForumThread(thread *models.Thread) (*models.Thread, error) {
-	//TODO: Created либо автоматическим сделать, либо самому проставлять в usecase
-	query := `insert into "thread" (title, author, forum, message, slug, created) values ($1, $2, $3, $4, $5, $6) returning id`
-	rows, err := r.db.Query(query, thread.Title, thread.Author, thread.Forum, thread.Message, thread.Slug, thread.Created)
+	query := `insert into "thread" (title, author, forum, message, slug, created) values ($1, $2, $3, $4, $5, $6)
+              returning id, title, author, forum, message, votes, slug, created`
+	err := r.db.QueryRow(query, thread.Title, thread.Author, thread.Forum, thread.Message, thread.Slug, thread.Created).Scan(
+		&thread.Id,
+		&thread.Title,
+		&thread.Author,
+		&thread.Forum,
+		&thread.Message,
+		&thread.Votes,
+		&thread.Slug,
+		&thread.Created,
+	)
 	if err != nil {
-		rows.Close()
-		foundThread := &models.Thread{}
-		query = `select * from "thread" where slug = $1`
-		err := r.db.QueryRow(query, thread.Slug).Scan(
-			&foundThread.Id,
-			&foundThread.Title,
-			&foundThread.Author,
-			&foundThread.Forum,
-			&foundThread.Message,
-			&foundThread.Votes,
-			&foundThread.Slug,
-			&foundThread.Created,
-		)
-		if err != nil {
-			return nil, models.ErrPostgres
-		}
-		return foundThread, models.ErrThreadExists
+		return nil, models.ErrDatabase
 	}
-	if rows.Next() {
-		err = rows.Scan(&thread.Id)
-		if err != nil {
-			rows.Close()
-			return nil, models.ErrPostgres
-		}
-	}
-	rows.Close()
 	return thread, nil
 }
 
+//TODO: Проверить
 func (r *ForumRepository) GetForumUsers(slug string, limit string, since string, desc string) (*models.Users, error) {
 	users := &models.Users{}
-	query := `select (nickname, fullname, about, email) from "user"
+	query := `select nickname, fullname, about, email from "user"
 				join forum_user on forum_user."user" = nickname
 				where forum_user.forum = $1`
 
@@ -151,11 +115,7 @@ func (r *ForumRepository) GetForumUsers(slug string, limit string, since string,
 
 	if err != nil {
 		rows.Close()
-		if err == sql.ErrNoRows {
-			return users, nil
-		} else {
-			return nil, models.ErrPostgres
-		}
+		return nil, models.ErrDatabase
 	}
 
 	for rows.Next() {
@@ -163,7 +123,7 @@ func (r *ForumRepository) GetForumUsers(slug string, limit string, since string,
 		err = rows.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
 		if err != nil {
 			rows.Close()
-			return nil, models.ErrPostgres
+			return nil, models.ErrDatabase
 		}
 		users.Users = append(users.Users, *user)
 	}
@@ -172,9 +132,10 @@ func (r *ForumRepository) GetForumUsers(slug string, limit string, since string,
 	return users, nil
 }
 
+//TODO: Проверить
 func (r *ForumRepository) GetForumThreads(slug string, limit string, since string, desc string) (*models.Threads, error) {
 	threads := &models.Threads{}
-	query := `select (*) from thread where forum = $1`
+	query := `select * from thread where forum = $1`
 
 	var rows *pgx.Rows
 	var err error
@@ -219,11 +180,7 @@ func (r *ForumRepository) GetForumThreads(slug string, limit string, since strin
 
 	if err != nil {
 		rows.Close()
-		if err == sql.ErrNoRows {
-			return threads, nil
-		} else {
-			return nil, models.ErrPostgres
-		}
+		return nil, models.ErrDatabase
 	}
 
 	for rows.Next() {
@@ -231,7 +188,7 @@ func (r *ForumRepository) GetForumThreads(slug string, limit string, since strin
 		err = rows.Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created)
 		if err != nil {
 			rows.Close()
-			return nil, models.ErrPostgres
+			return nil, models.ErrDatabase
 		}
 		threads.Threads = append(threads.Threads, *thread)
 	}
