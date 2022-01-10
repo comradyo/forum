@@ -43,10 +43,10 @@ func NewApp() (*App, error) {
 	threadR := repository.NewThreadRepository(db)
 	userR := repository.NewUserRepository(db)
 
-	forumUC := usecase.NewForumUseCase(forumR, userR)
+	forumUC := usecase.NewForumUseCase(forumR, userR, threadR)
 	postUC := usecase.NewPostUseCase(postR, userR, forumR, threadR)
 	serviceUC := usecase.NewServiceUseCase(serviceR)
-	threadUC := usecase.NewThreadUseCase(threadR, userR)
+	threadUC := usecase.NewThreadUseCase(threadR, userR, postR)
 	userUC := usecase.NewUserUseCase(userR)
 
 	forumD := delivery.NewForumDelivery(forumUC)

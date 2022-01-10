@@ -13,5 +13,4 @@ var (
 	ErrThreadExists          = errors.New("thread already exists")
 	ErrThreadNotFound        = errors.New("thread not found")
 	ErrPostNotFound          = errors.New("post not found")
-	ErrParentPostNotFound    = errors.New("parent post not found")
 )

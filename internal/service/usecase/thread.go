@@ -34,14 +34,10 @@ func (u *ThreadUseCase) CreateThreadPosts(slugOrId string, posts *models.Posts) 
 	for i, _ := range posts.Posts {
 		parentPost, err := u.postRepo.GetPost(posts.Posts[i].Parent)
 		if err != nil {
-			if err == models.ErrPostNotFound {
-				return nil, models.ErrParentPostNotFound
-			} else {
-				return nil, err
-			}
+			return nil, err
 		}
 		if parentPost.Thread != thread.Id {
-			return nil, models.ErrParentPostNotFound
+			return nil, models.ErrPostNotFound
 		}
 		posts.Posts[i].Forum = thread.Forum
 		posts.Posts[i].Thread = thread.Id

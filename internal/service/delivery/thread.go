@@ -116,8 +116,6 @@ func (d *ThreadDelivery) GetThreadPosts(w http.ResponseWriter, r *http.Request) 
 		log.Error(message+"error = ", err)
 		if err == models.ErrThreadNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
-		} else if err == models.ErrParentPostNotFound {
-			response.SendResponse(w, http.StatusConflict, models.Error{Message: err.Error()})
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 		}
