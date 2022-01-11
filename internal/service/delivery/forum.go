@@ -96,7 +96,7 @@ func (d *ForumDelivery) CreateForumThread(w http.ResponseWriter, r *http.Request
 		}
 	}
 	response.SendResponse(w, http.StatusCreated, newThread)
-	log.Info(message + "started")
+	log.Info(message + "ended")
 	return
 }
 
@@ -132,7 +132,7 @@ func (d *ForumDelivery) GetForumUsers(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	response.SendResponse(w, http.StatusOK, users)
-	log.Info(message + "started")
+	log.Info(message + "ended")
 	return
 }
 
@@ -168,6 +168,6 @@ func (d *ForumDelivery) GetForumThreads(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	response.SendResponse(w, http.StatusOK, threads)
-	log.Info(message + "started")
+	log.Info(message + "ended")
 	return
 }

@@ -60,7 +60,7 @@ func (u *PostUseCase) UpdatePostDetails(post *models.Post) (*models.Post, error)
 	if post.Message != postFull.Post.Message {
 		post.IsEdited = true
 	} else {
-		return post, nil
+		return postFull.Post, nil
 	}
 	return u.repository.UpdatePostDetails(post)
 }

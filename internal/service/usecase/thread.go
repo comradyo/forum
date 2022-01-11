@@ -32,18 +32,20 @@ func (u *ThreadUseCase) CreateThreadPosts(slugOrId string, posts *models.Posts) 
 	}
 	created := time.Now()
 	for i, _ := range posts.Posts {
-		parentPost, err := u.postRepo.GetPost(posts.Posts[i].Parent)
-		if err != nil {
-			return nil, err
-		}
-		if parentPost.Thread != thread.Id {
-			return nil, models.ErrPostNotFound
+		if posts.Posts[i].Parent != 0 {
+			parentPost, err := u.postRepo.GetPost(posts.Posts[i].Parent)
+			if err != nil {
+				return nil, err
+			}
+			if parentPost.Thread != thread.Id {
+				return nil, models.ErrPostNotFound
+			}
 		}
 		posts.Posts[i].Forum = thread.Forum
 		posts.Posts[i].Thread = thread.Id
 		posts.Posts[i].Created = created
 	}
-	return u.repository.CreateThreadPosts(slugOrId, posts)
+	return u.repository.CreateThreadPosts(thread.Id, posts)
 }
 
 func (u *ThreadUseCase) GetThreadDetails(slugOrId string) (*models.Thread, error) {
@@ -55,21 +57,22 @@ func (u *ThreadUseCase) UpdateThreadDetails(slugOrId string, thread *models.Thre
 	if err != nil {
 		return nil, err
 	}
+	thread.Id = oldThread.Id
 	if thread.Title == "" {
 		thread.Title = oldThread.Title
 	}
 	if thread.Message == "" {
 		thread.Message = oldThread.Message
 	}
-	return u.repository.UpdateThreadDetails(slugOrId, thread)
+	return u.repository.UpdateThreadDetails(thread.Id, thread)
 }
 
 func (u *ThreadUseCase) GetThreadPosts(slugOrId string, limit string, since string, sort string, desc string) (*models.Posts, error) {
-	_, err := u.GetThreadDetails(slugOrId)
+	thread, err := u.GetThreadDetails(slugOrId)
 	if err != nil {
 		return nil, err
 	}
-	return u.repository.GetThreadPosts(slugOrId, limit, since, sort, desc)
+	return u.repository.GetThreadPosts(thread.Id, limit, since, sort, desc)
 }
 
 func (u *ThreadUseCase) VoteForThread(slugOrId string, vote *models.Vote) (*models.Thread, error) {
@@ -81,9 +84,9 @@ func (u *ThreadUseCase) VoteForThread(slugOrId string, vote *models.Vote) (*mode
 	if err != nil {
 		return nil, err
 	}
-	err = u.repository.VoteForThread(thread.Slug, vote)
+	err = u.repository.VoteForThread(thread.Id, vote)
 	if err != nil {
 		return nil, err
 	}
-	return u.GetThreadDetails(slugOrId)
+	return u.GetThreadDetails(thread.Slug)
 }

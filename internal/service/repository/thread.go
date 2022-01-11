@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"fmt"
 	"forum/forum/internal/models"
+	log "forum/forum/pkg/logger"
 	"strconv"
 	"strings"
 
@@ -20,9 +22,9 @@ func NewThreadRepository(db *pgx.ConnPool) *ThreadRepository {
 	}
 }
 
-func getSlugOrId(slugOrId string) (bool, int64, string) {
+func getSlugOrId(slugOrId string) (bool, int32, string) {
 	var isId bool
-	var idInt64 int64
+	var id int32
 	var slug string
 	idInt, err := strconv.Atoi(slugOrId)
 	if err != nil {
@@ -30,28 +32,68 @@ func getSlugOrId(slugOrId string) (bool, int64, string) {
 		slug = slugOrId
 	} else {
 		isId = true
-		idInt64 = int64(idInt)
+		id = int32(idInt)
 	}
-	return isId, idInt64, slug
+	return isId, id, slug
 }
 
-//TODO: Проверить
-func (r *ThreadRepository) CreateThreadPosts(slugOrId string, posts *models.Posts) (*models.Posts, error) {
-	isId, idInt64, slug := getSlugOrId(slugOrId)
-	_ = isId
-	_ = idInt64
-	_ = slug
+func (r *ThreadRepository) CreateThreadPosts(id int32, posts *models.Posts) (*models.Posts, error) {
+	createdPosts := &models.Posts{}
 
-	return nil, nil
+	query := `insert into post (parent, author, message, forum, thread, created) values`
+	var values []interface{}
+
+	for i, post := range posts.Posts {
+		valuesNumbers := fmt.Sprintf(
+			"($%d, $%d, $%d, $%d, $%d, $%d),",
+			i*6+1,
+			i*6+2,
+			i*6+3,
+			i*6+4,
+			i*6+5,
+			i*6+6,
+		)
+		query += valuesNumbers
+		values = append(values, post.Parent, post.Author, post.Message, post.Forum, post.Thread, post.Created)
+	}
+	query = strings.TrimSuffix(query, ",")
+	query += ` returning id, parent, author, message, is_edited, forum, thread, created`
+
+	rows, err := r.db.Query(query, values...)
+	if err != nil {
+		log.Debug(err)
+		rows.Close()
+		return nil, models.ErrDatabase
+	}
+	for rows.Next() {
+		post := &models.Post{}
+		err := rows.Scan(
+			&post.Id,
+			&post.Parent,
+			&post.Author,
+			&post.Message,
+			&post.IsEdited,
+			&post.Forum,
+			&post.Thread,
+			&post.Created,
+		)
+		if err != nil {
+			rows.Close()
+			return nil, models.ErrDatabase
+		}
+		createdPosts.Posts = append(createdPosts.Posts, *post)
+	}
+	rows.Close()
+	return createdPosts, nil
 }
 
 func (r *ThreadRepository) GetThreadDetails(slugOrId string) (*models.Thread, error) {
-	isId, idInt64, slug := getSlugOrId(slugOrId)
+	isId, id, slug := getSlugOrId(slugOrId)
 	var row *pgx.Row
 
 	if isId {
 		query := `select * from thread where id = $1`
-		row = r.db.QueryRow(query, idInt64)
+		row = r.db.QueryRow(query, id)
 	} else {
 		query := `select * from thread where slug = $1`
 		row = r.db.QueryRow(query, slug)
@@ -79,63 +121,127 @@ func (r *ThreadRepository) GetThreadDetails(slugOrId string) (*models.Thread, er
 	return foundThread, nil
 }
 
-//TODO: Проверить
-func (r *ThreadRepository) UpdateThreadDetails(slugOrId string, thread *models.Thread) (*models.Thread, error) {
-	isId, idInt64, slug := getSlugOrId(slugOrId)
-	var row *pgx.Row
-
-	if isId {
-		query := `update thread set title = $1, message = $2 where id = $3 returning id, title, author, forum, message, votes, slug, created`
-		row = r.db.QueryRow(query, thread.Title, thread.Message, idInt64)
-	} else {
-		query := `update thread set title = $1, message = $2 where slug = $3 returning id, title, author, forum, message, votes, slug, created`
-		row = r.db.QueryRow(query, thread.Title, thread.Message, slug)
-	}
-
-	updatedThread := &models.Thread{}
+func (r *ThreadRepository) UpdateThreadDetails(id int32, thread *models.Thread) (*models.Thread, error) {
+	query := `update thread set title = $1, message = $2 where id = $3 returning id, title, author, forum, message, votes, slug, created`
+	row := r.db.QueryRow(query, thread.Title, thread.Message, id)
 	err := row.Scan(
-		&updatedThread.Id,
-		&updatedThread.Title,
-		&updatedThread.Author,
-		&updatedThread.Forum,
-		&updatedThread.Message,
-		&updatedThread.Votes,
-		&updatedThread.Slug,
-		&updatedThread.Created,
+		&thread.Id,
+		&thread.Title,
+		&thread.Author,
+		&thread.Forum,
+		&thread.Message,
+		&thread.Votes,
+		&thread.Slug,
+		&thread.Created,
 	)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, models.ErrThreadNotFound
+		return nil, models.ErrDatabase
+	}
+	return thread, nil
+}
+
+/*
+
+	var rows *pgx.Rows
+	var err error
+
+	if desc == "true" {
+		if since != "" {
+			query += ` and "user".nickname < $2 order by forum_user."user" desc`
+			if limit != "" {
+				query += ` limit $3`
+				rows, err = r.db.Query(query, slug, since, limit)
+			} else {
+				rows, err = r.db.Query(query, slug, since)
+			}
 		} else {
-			return nil, models.ErrDatabase
+			query += ` order by forum_user."user" desc`
+			if limit != "" {
+				query += ` limit $2`
+				rows, err = r.db.Query(query, slug, limit)
+			} else {
+				rows, err = r.db.Query(query, slug)
+			}
+		}
+	} else {
+		if since != "" {
+			query += ` and "user".nickname > $2 order by forum_user."user"`
+			if limit != "" {
+				query += ` limit $3`
+				rows, err = r.db.Query(query, slug, since, limit)
+			} else {
+				rows, err = r.db.Query(query, slug, since)
+			}
+		} else {
+			query += ` order by forum_user."user"`
+			if limit != "" {
+				query += ` limit $2`
+				rows, err = r.db.Query(query, slug, limit)
+			} else {
+				rows, err = r.db.Query(query, slug)
+			}
 		}
 	}
 
-	return nil, nil
-}
+	if err != nil {
+		rows.Close()
+		return nil, models.ErrDatabase
+	}
 
-//TODO: Проверить
-func (r *ThreadRepository) GetThreadPosts(slugOrId string, limit string, since string, sort string, desc string) (*models.Posts, error) {
-	isId, idInt64, slug := getSlugOrId(slugOrId)
-	_ = isId
-	_ = idInt64
-	_ = slug
-
-	return nil, nil
-}
-
-//TODO: Проверить
-func (r *ThreadRepository) VoteForThread(slug string, vote *models.Vote) error {
-	query := `insert into vote (thread, "user", voice) values $1, $2, $3`
-	_, err := r.db.Exec(query, slug, vote.Nickname, vote.Voice)
-	if strings.Contains(err.Error(), "duplicate") {
-		query = `update vote set voice = $1 where thread = $2 and "user = $3"`
-		_, err = r.db.Exec(query, vote.Voice, slug, vote.Nickname)
+	for rows.Next() {
+		user := &models.User{}
+		err = rows.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
 		if err != nil {
+			rows.Close()
+			return nil, models.ErrDatabase
+		}
+		users.Users = append(users.Users, *user)
+	}
+
+	rows.Close()
+	return users, nil
+*/
+
+/*
+   id          serial primary key,
+   parent      int default 0,
+   author      citext references "user"(nickname) on delete cascade not null,
+   message     text not null,
+   is_edited   bool not null default false,
+   forum       citext references "forum"(slug) on delete cascade not null,
+   thread      int references "thread"(id) on delete cascade not null,
+   created     timestamp with time zone default now(),
+*/
+
+//TODO: Проверить
+func (r *ThreadRepository) GetThreadPosts(id int32, limit string, since string, sort string, desc string) (*models.Posts, error) {
+	posts := &models.Posts{}
+	var query string
+	_ = query
+	if sort == "" || sort == "flat" {
+		query = `select id, parent, author, message, is_edited, forum, thread, created from "post"
+					where thread = $1`
+	} else if sort == "tree" {
+		//TODO
+	} else if sort == "parent_tree" {
+		//TODO
+	}
+	return posts, nil
+}
+
+func (r *ThreadRepository) VoteForThread(id int32, vote *models.Vote) error {
+	query := `insert into vote (thread, "user", voice) values ($1, $2, $3)`
+	_, err := r.db.Exec(query, id, vote.Nickname, vote.Voice)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate") {
+			query = `update vote set voice = $1 where thread = $2 and "user" = $3`
+			_, err = r.db.Exec(query, vote.Voice, id, vote.Nickname)
+			if err != nil {
+				return models.ErrDatabase
+			}
+		} else {
 			return models.ErrDatabase
 		}
-	} else {
-		return models.ErrDatabase
 	}
 	return nil
 }

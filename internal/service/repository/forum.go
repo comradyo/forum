@@ -95,7 +95,7 @@ func (r *ForumRepository) GetForumUsers(slug string, limit string, since string,
 		}
 	} else {
 		if since != "" {
-			query += ` and "user".nickname < $2 order by forum_user."user"`
+			query += ` and "user".nickname > $2 order by forum_user."user"`
 			if limit != "" {
 				query += ` limit $3`
 				rows, err = r.db.Query(query, slug, since, limit)
@@ -132,7 +132,7 @@ func (r *ForumRepository) GetForumUsers(slug string, limit string, since string,
 	return users, nil
 }
 
-//TODO: Проверить
+//TODO: Проверить работу со временем
 func (r *ForumRepository) GetForumThreads(slug string, limit string, since string, desc string) (*models.Threads, error) {
 	threads := &models.Threads{}
 	query := `select * from thread where forum = $1`
@@ -142,7 +142,7 @@ func (r *ForumRepository) GetForumThreads(slug string, limit string, since strin
 
 	if desc == "true" {
 		if since != "" {
-			query += ` and created < $2 order by created desc`
+			query += ` and created <= $2 order by created desc`
 			if limit != "" {
 				query += ` limit $3`
 				rows, err = r.db.Query(query, slug, since, limit)
@@ -160,7 +160,7 @@ func (r *ForumRepository) GetForumThreads(slug string, limit string, since strin
 		}
 	} else {
 		if since != "" {
-			query += ` and created < $2 order by created`
+			query += ` and created >= $2 order by created`
 			if limit != "" {
 				query += ` limit $3`
 				rows, err = r.db.Query(query, slug, since, limit)

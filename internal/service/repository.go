@@ -21,11 +21,11 @@ type ServiceRepositoryInterface interface {
 }
 
 type ThreadRepositoryInterface interface {
-	CreateThreadPosts(slugOrId string, posts *models.Posts) (*models.Posts, error)
+	CreateThreadPosts(id int32, posts *models.Posts) (*models.Posts, error)
 	GetThreadDetails(slugOrId string) (*models.Thread, error)
-	UpdateThreadDetails(slugOrId string, thread *models.Thread) (*models.Thread, error)
-	GetThreadPosts(slugOrId string, limit string, since string, sort string, desc string) (*models.Posts, error)
-	VoteForThread(slug string, vote *models.Vote) error
+	UpdateThreadDetails(id int32, thread *models.Thread) (*models.Thread, error)
+	GetThreadPosts(id int32, limit string, since string, sort string, desc string) (*models.Posts, error)
+	VoteForThread(id int32, vote *models.Vote) error
 }
 
 type UserRepositoryInterface interface {

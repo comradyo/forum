@@ -48,6 +48,7 @@ func (d *ThreadDelivery) CreateThreadPosts(w http.ResponseWriter, r *http.Reques
 	}
 	response.SendResponse(w, http.StatusCreated, newPosts)
 	log.Info(message + "ended")
+	return
 }
 
 func (d *ThreadDelivery) GetThreadDetails(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +69,7 @@ func (d *ThreadDelivery) GetThreadDetails(w http.ResponseWriter, r *http.Request
 	}
 	response.SendResponse(w, http.StatusOK, thread)
 	log.Info(message + "ended")
+	return
 }
 
 func (d *ThreadDelivery) UpdateThreadDetails(w http.ResponseWriter, r *http.Request) {
@@ -82,6 +84,7 @@ func (d *ThreadDelivery) UpdateThreadDetails(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	updatedThread, err := d.useCase.UpdateThreadDetails(slugOrId, thread)
+	log.Debug(updatedThread)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		if err == models.ErrThreadNotFound {
@@ -101,7 +104,7 @@ func (d *ThreadDelivery) GetThreadPosts(w http.ResponseWriter, r *http.Request) 
 	message := threadLogMessage + "GetThreadPosts:"
 	log.Info(message + "started")
 	vars := mux.Vars(r)
-	slugOrId := vars["slug_od_id"]
+	slugOrId := vars["slug_or_id"]
 
 	q := r.URL.Query()
 	var limit string
@@ -141,14 +144,14 @@ func (d *ThreadDelivery) VoteForThread(w http.ResponseWriter, r *http.Request) {
 	message := threadLogMessage + "VoteForThread:"
 	log.Info(message + "started")
 	vars := mux.Vars(r)
-	slugOdId := vars["slugOdId"]
+	slugOrId := vars["slug_or_id"]
 	vote, err := response.GetVoteFromRequest(r.Body)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 		return
 	}
-	thread, err := d.useCase.VoteForThread(slugOdId, vote)
+	thread, err := d.useCase.VoteForThread(slugOrId, vote)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		if err == models.ErrThreadNotFound {

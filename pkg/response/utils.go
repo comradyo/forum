@@ -2,6 +2,7 @@ package response
 
 import (
 	"forum/forum/internal/models"
+	log "forum/forum/pkg/logger"
 	json "github.com/mailru/easyjson"
 	"io"
 )
@@ -46,6 +47,7 @@ func GetPostsFromRequest(r io.Reader) (*models.Posts, error) {
 	postsInput := new(models.Posts)
 	err := json.UnmarshalFromReader(r, postsInput)
 	if err != nil {
+		log.Debug(err)
 		return nil, models.ErrJSONDecoding
 	}
 	return postsInput, nil

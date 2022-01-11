@@ -166,20 +166,14 @@ func easyjson2d00218EncodeForumForumInternalModels1(out *jwriter.Writer, in Thre
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.Id != 0 {
+	{
 		const prefix string = ",\"id\":"
-		first = false
 		out.RawString(prefix[1:])
 		out.Int32(int32(in.Id))
 	}
 	{
 		const prefix string = ",\"title\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.Title))
 	}
 	{
@@ -187,7 +181,7 @@ func easyjson2d00218EncodeForumForumInternalModels1(out *jwriter.Writer, in Thre
 		out.RawString(prefix)
 		out.String(string(in.Author))
 	}
-	if in.Forum != "" {
+	{
 		const prefix string = ",\"forum\":"
 		out.RawString(prefix)
 		out.String(string(in.Forum))
@@ -197,17 +191,17 @@ func easyjson2d00218EncodeForumForumInternalModels1(out *jwriter.Writer, in Thre
 		out.RawString(prefix)
 		out.String(string(in.Message))
 	}
-	if in.Votes != 0 {
+	{
 		const prefix string = ",\"votes\":"
 		out.RawString(prefix)
 		out.Int32(int32(in.Votes))
 	}
-	if in.Slug != "" {
+	{
 		const prefix string = ",\"slug\":"
 		out.RawString(prefix)
 		out.String(string(in.Slug))
 	}
-	if true {
+	{
 		const prefix string = ",\"created\":"
 		out.RawString(prefix)
 		out.Raw((in.Created).MarshalJSON())

@@ -18,7 +18,6 @@ func NewPostRepository(db *pgx.ConnPool) *PostRepository {
 	}
 }
 
-//TODO: Проверить
 func (r *PostRepository) GetPost(id int64) (*models.Post, error) {
 	query := `select id, parent, author, message, is_edited, forum, thread, created from post where id = $1`
 	foundPost := &models.Post{}
@@ -42,7 +41,6 @@ func (r *PostRepository) GetPost(id int64) (*models.Post, error) {
 	return foundPost, nil
 }
 
-//TODO: Проверить
 func (r *PostRepository) UpdatePostDetails(post *models.Post) (*models.Post, error) {
 	query := `update post set message = $1, is_edited = true where id = $2 returning
 				id, parent, author, message, is_edited, forum, thread, created`
