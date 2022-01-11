@@ -71,3 +71,9 @@ CREATE UNLOGGED TABLE "forum_user"
     "user"      citext references "user"(nickname) on delete cascade not null,
     UNIQUE (forum, "user")
 );
+
+insert into post (parent, author, message, is_edited, forum, thread, created, path) VALUES
+(0, 'dude', 'post', false, 'ace-forum', '18', now(), '{0, 1, 2}');
+
+SELECT id, parent, author, message, is_edited, forum, thread, created
+from post where thread = 13 order by id limit all;

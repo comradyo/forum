@@ -18,7 +18,6 @@ func NewServiceRepository(db *pgx.ConnPool) *ServiceRepository {
 	}
 }
 
-//TODO: Проверить
 func (r *ServiceRepository) Clear() error {
 	query := `truncate forum_user, vote, post, thread, forum, "user"`
 	_, err := r.db.Exec(query)
@@ -28,7 +27,6 @@ func (r *ServiceRepository) Clear() error {
 	return nil
 }
 
-//TODO: Проверить
 func (r *ServiceRepository) GetStatus() (*models.Status, error) {
 	status := &models.Status{}
 	err := r.db.QueryRow(`select count(*) from "user"`).Scan(&status.User)

@@ -78,38 +78,22 @@ func (r *ForumRepository) GetForumUsers(slug string, limit string, since string,
 	if desc == "true" {
 		if since != "" {
 			query += ` and "user".nickname < $2 order by forum_user."user" desc`
-			if limit != "" {
-				query += ` limit $3`
-				rows, err = r.db.Query(query, slug, since, limit)
-			} else {
-				rows, err = r.db.Query(query, slug, since)
-			}
+			query += ` limit $3`
+			rows, err = r.db.Query(query, slug, since, limit)
 		} else {
 			query += ` order by forum_user."user" desc`
-			if limit != "" {
-				query += ` limit $2`
-				rows, err = r.db.Query(query, slug, limit)
-			} else {
-				rows, err = r.db.Query(query, slug)
-			}
+			query += ` limit $2`
+			rows, err = r.db.Query(query, slug, limit)
 		}
 	} else {
 		if since != "" {
 			query += ` and "user".nickname > $2 order by forum_user."user"`
-			if limit != "" {
-				query += ` limit $3`
-				rows, err = r.db.Query(query, slug, since, limit)
-			} else {
-				rows, err = r.db.Query(query, slug, since)
-			}
+			query += ` limit $3`
+			rows, err = r.db.Query(query, slug, since, limit)
 		} else {
 			query += ` order by forum_user."user"`
-			if limit != "" {
-				query += ` limit $2`
-				rows, err = r.db.Query(query, slug, limit)
-			} else {
-				rows, err = r.db.Query(query, slug)
-			}
+			query += ` limit $2`
+			rows, err = r.db.Query(query, slug, limit)
 		}
 	}
 
@@ -143,38 +127,22 @@ func (r *ForumRepository) GetForumThreads(slug string, limit string, since strin
 	if desc == "true" {
 		if since != "" {
 			query += ` and created <= $2 order by created desc`
-			if limit != "" {
-				query += ` limit $3`
-				rows, err = r.db.Query(query, slug, since, limit)
-			} else {
-				rows, err = r.db.Query(query, slug, since)
-			}
+			query += ` limit $3`
+			rows, err = r.db.Query(query, slug, since, limit)
 		} else {
 			query += ` order by created desc`
-			if limit != "" {
-				query += ` limit $2`
-				rows, err = r.db.Query(query, slug, limit)
-			} else {
-				rows, err = r.db.Query(query, slug)
-			}
+			query += ` limit $2`
+			rows, err = r.db.Query(query, slug, limit)
 		}
 	} else {
 		if since != "" {
 			query += ` and created >= $2 order by created`
-			if limit != "" {
-				query += ` limit $3`
-				rows, err = r.db.Query(query, slug, since, limit)
-			} else {
-				rows, err = r.db.Query(query, slug, since)
-			}
+			query += ` limit $3`
+			rows, err = r.db.Query(query, slug, since, limit)
 		} else {
 			query += ` order by created`
-			if limit != "" {
-				query += ` limit $2`
-				rows, err = r.db.Query(query, slug, limit)
-			} else {
-				rows, err = r.db.Query(query, slug)
-			}
+			query += ` limit $2`
+			rows, err = r.db.Query(query, slug, limit)
 		}
 	}
 
