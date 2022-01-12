@@ -1,6 +1,7 @@
 package response
 
 import (
+	json1 "encoding/json"
 	"forum/forum/internal/models"
 	log "forum/forum/pkg/logger"
 	json "github.com/mailru/easyjson"
@@ -43,14 +44,15 @@ func GetPostFromRequest(r io.Reader) (*models.Post, error) {
 	return postInput, nil
 }
 
-func GetPostsFromRequest(r io.Reader) (*models.Posts, error) {
-	postsInput := new(models.Posts)
-	err := json.UnmarshalFromReader(r, postsInput)
+func GetPostsFromRequest(r io.Reader) ([]models.Post, error) {
+	var posts []models.Post
+	decoder := json1.NewDecoder(r)
+	err := decoder.Decode(&posts)
 	if err != nil {
-		log.Debug(err)
+		log.Error(err)
 		return nil, models.ErrJSONDecoding
 	}
-	return postsInput, nil
+	return posts, nil
 }
 
 func GetVoteFromRequest(r io.Reader) (*models.Vote, error) {

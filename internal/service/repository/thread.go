@@ -61,7 +61,6 @@ func (r *ThreadRepository) CreateThreadPosts(id int32, posts *models.Posts) (*mo
 
 	rows, err := r.db.Query(query, values...)
 	if err != nil {
-		log.Debug(err)
 		rows.Close()
 		return nil, models.ErrDatabase
 	}
@@ -302,14 +301,21 @@ func (r *ThreadRepository) GetThreadPosts(id int32, limit string, since string, 
 	}
 }
 
+/*
+`insert into vote (thread, "user", voice) values ($1, $2, $3)`
+`update vote set voice = $1 where thread = $2 and "user" = $3`
+*/
+
 func (r *ThreadRepository) VoteForThread(id int32, vote *models.Vote) error {
 	query := `insert into vote (thread, "user", voice) values ($1, $2, $3)`
 	_, err := r.db.Exec(query, id, vote.Nickname, vote.Voice)
 	if err != nil {
+		log.Debug("err 1 =", err)
 		if strings.Contains(err.Error(), "duplicate") {
 			query = `update vote set voice = $1 where thread = $2 and "user" = $3`
 			_, err = r.db.Exec(query, vote.Voice, id, vote.Nickname)
 			if err != nil {
+				log.Debug("err 2 =", err)
 				return models.ErrDatabase
 			}
 		} else {

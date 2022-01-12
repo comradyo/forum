@@ -34,7 +34,7 @@ CREATE UNLOGGED TABLE "thread"
     forum       citext references "forum"(slug) on delete cascade not null,
     message     text not null,
     votes       int default 0,
-    slug        citext unique,
+    slug        citext,
     created     timestamp with time zone default now()
 );
 
@@ -99,13 +99,7 @@ create trigger trigger_vote_create
 -----------------------------------------
 create or replace function change_thread_votes() returns trigger as $$
 begin
-    if new.voice <> old.voice then
-        if new.voice > 0 then
-            update thread set votes = (votes + 2) where id = new.thread;
-        else
-            update thread set votes = (votes - 2) where id = new.thread;
-        end if;
-    end if;
+    update thread set votes = votes - old.voice + new.voice where id = new.thread;
     return new;
 end
 $$ language 'plpgsql';

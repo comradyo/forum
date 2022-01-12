@@ -31,5 +31,6 @@ type ThreadRepositoryInterface interface {
 type UserRepositoryInterface interface {
 	CreateUser(profile *models.User) (*models.User, error)
 	GetUserProfile(nickname string) (*models.User, error)
+	GetUserProfileByMail(mail string) (*models.User, error)
 	UpdateUserProfile(profile *models.User) (*models.User, error)
 }

@@ -33,18 +33,18 @@ func (d *UserDelivery) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	profile.Nickname = nickname
-	newUser, err := d.useCase.CreateUser(profile)
+	users, err := d.useCase.CreateUser(profile)
 	if err != nil {
 		log.Error(message+"error = ", err)
 		if err == models.ErrUserExists {
-			response.SendResponse(w, http.StatusConflict, newUser)
+			response.SendResponse(w, http.StatusConflict, users)
 			return
 		} else {
 			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 			return
 		}
 	}
-	response.SendResponse(w, http.StatusCreated, newUser)
+	response.SendResponse(w, http.StatusCreated, users[0])
 	log.Info(message + "ended")
 	return
 }

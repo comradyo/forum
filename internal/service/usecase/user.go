@@ -17,8 +17,31 @@ func NewUserUseCase(repository service.UserRepositoryInterface) *UserUseCase {
 	}
 }
 
-func (u *UserUseCase) CreateUser(profile *models.User) (*models.User, error) {
-	return u.repository.CreateUser(profile)
+func (u *UserUseCase) CreateUser(profile *models.User) ([]models.User, error) {
+	var users []models.User
+	oldUser1, err1 := u.repository.GetUserProfile(profile.Nickname)
+	if err1 == nil {
+		users = append(users, *oldUser1)
+	}
+	oldUser2, err2 := u.repository.GetUserProfileByMail(profile.Email)
+	if err2 == nil {
+		if oldUser1 != nil {
+			if oldUser1.Nickname != oldUser2.Nickname && oldUser1.Email != oldUser2.Email {
+				users = append(users, *oldUser2)
+			}
+		} else {
+			users = append(users, *oldUser2)
+		}
+	}
+	if err1 == nil || err2 == nil {
+		return users, models.ErrUserExists
+	}
+	newUser, err := u.repository.CreateUser(profile)
+	if err != nil {
+		return nil, err
+	}
+	users = append(users, *newUser)
+	return users, nil
 }
 
 func (u *UserUseCase) GetUserProfile(nickname string) (*models.User, error) {

@@ -29,7 +29,7 @@ type ThreadUseCaseInterface interface {
 }
 
 type UserUseCaseInterface interface {
-	CreateUser(profile *models.User) (*models.User, error)
+	CreateUser(profile *models.User) ([]models.User, error)
 	GetUserProfile(nickname string) (*models.User, error)
 	UpdateUserProfile(profile *models.User) (*models.User, error)
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"forum/forum/internal/models"
+	log "forum/forum/pkg/logger"
 	"github.com/jackc/pgx"
 )
 
@@ -65,39 +66,36 @@ func (r *ForumRepository) CreateForumThread(thread *models.Thread) (*models.Thre
 	return thread, nil
 }
 
-//TODO: Проверить
 func (r *ForumRepository) GetForumUsers(slug string, limit string, since string, desc string) (*models.Users, error) {
 	users := &models.Users{}
-	query := `select nickname, fullname, about, email from "user"
-				join forum_user on forum_user."user" = nickname
-				where forum_user.forum = $1`
 
 	var rows *pgx.Rows
 	var err error
 
+	query := `select nickname, fullname, about, email from "user"
+						join forum_user on "user".nickname = forum_user."user" 
+						and forum_user.forum = $1 `
+
 	if desc == "true" {
 		if since != "" {
-			query += ` and "user".nickname < $2 order by forum_user."user" desc`
-			query += ` limit $3`
+			query += ` and nickname < $2 order by nickname desc limit $3`
 			rows, err = r.db.Query(query, slug, since, limit)
 		} else {
-			query += ` order by forum_user."user" desc`
-			query += ` limit $2`
+			query += ` order by nickname desc limit $2`
 			rows, err = r.db.Query(query, slug, limit)
 		}
 	} else {
 		if since != "" {
-			query += ` and "user".nickname > $2 order by forum_user."user"`
-			query += ` limit $3`
+			query += ` and nickname > $2 order by nickname limit $3`
 			rows, err = r.db.Query(query, slug, since, limit)
 		} else {
-			query += ` order by forum_user."user"`
-			query += ` limit $2`
+			query += ` order by nickname limit $2`
 			rows, err = r.db.Query(query, slug, limit)
 		}
 	}
 
 	if err != nil {
+		log.Debug(err)
 		rows.Close()
 		return nil, models.ErrDatabase
 	}

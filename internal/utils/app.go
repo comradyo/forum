@@ -72,7 +72,7 @@ func (a *App) Run() error {
 	log.Init(logrus.DebugLevel)
 	log.Info("app started")
 	r := NewRouterForApp(a)
-	port := "5050"
+	port := "5000"
 	err := http.ListenAndServe(":"+port, r)
 	if err != nil {
 		log.Error("app err = ", err)

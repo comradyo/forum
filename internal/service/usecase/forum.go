@@ -3,9 +3,7 @@ package usecase
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
-	log "forum/forum/pkg/logger"
 	"github.com/gofrs/uuid"
-	"time"
 )
 
 const forumLogMessage = "usecase:forum:"
@@ -25,10 +23,11 @@ func NewForumUseCase(repository service.ForumRepositoryInterface, userRepo servi
 }
 
 func (u *ForumUseCase) CreateForum(forum *models.Forum) (*models.Forum, error) {
-	_, err := u.userRepo.GetUserProfile(forum.User)
+	user, err := u.userRepo.GetUserProfile(forum.User)
 	if err != nil {
 		return nil, err
 	}
+	forum.User = user.Nickname
 	if forum.Slug != "" {
 		oldForum, err := u.GetForumDetails(forum.Slug)
 		if err == nil {
@@ -50,17 +49,16 @@ func (u *ForumUseCase) GetForumDetails(slug string) (*models.Forum, error) {
 }
 
 func (u *ForumUseCase) CreateForumThread(slug string, thread *models.Thread) (*models.Thread, error) {
-	_, err := u.repository.GetForumDetails(slug)
+	forum, err := u.repository.GetForumDetails(slug)
 	if err != nil {
 		return nil, err
 	}
-	_, err = u.userRepo.GetUserProfile(thread.Author)
+	user, err := u.userRepo.GetUserProfile(thread.Author)
 	if err != nil {
 		return nil, err
 	}
-	thread.Forum = slug
-	thread.Created = time.Now()
-	log.Debug(thread.Slug)
+	thread.Forum = forum.Slug
+	thread.Author = user.Nickname
 	if thread.Slug != "" {
 		oldThread, err := u.threadRepo.GetThreadDetails(thread.Slug)
 		if err == nil {
@@ -70,9 +68,6 @@ func (u *ForumUseCase) CreateForumThread(slug string, thread *models.Thread) (*m
 		} else {
 			return nil, err
 		}
-	} else {
-		slug, _ := uuid.NewV4()
-		thread.Slug = slug.String()
 	}
 	return u.repository.CreateForumThread(thread)
 }

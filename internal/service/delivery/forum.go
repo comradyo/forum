@@ -131,7 +131,12 @@ func (d *ForumDelivery) GetForumUsers(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	response.SendResponse(w, http.StatusOK, users)
+	if len(users.Users) == 0 {
+		response.SendResponse(w, http.StatusOK, []models.User{})
+		log.Info(message + "ended")
+		return
+	}
+	response.SendResponse(w, http.StatusOK, users.Users)
 	log.Info(message + "ended")
 	return
 }
@@ -167,7 +172,12 @@ func (d *ForumDelivery) GetForumThreads(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 	}
-	response.SendResponse(w, http.StatusOK, threads)
+	if len(threads.Threads) == 0 {
+		response.SendResponse(w, http.StatusOK, []models.Thread{})
+		log.Info(message + "ended")
+		return
+	}
+	response.SendResponse(w, http.StatusOK, threads.Threads)
 	log.Info(message + "ended")
 	return
 }

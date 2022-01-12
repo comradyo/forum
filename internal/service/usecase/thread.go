@@ -3,6 +3,7 @@ package usecase
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
+	log "forum/forum/pkg/logger"
 	"time"
 )
 
@@ -27,8 +28,8 @@ func (u *ThreadUseCase) CreateThreadPosts(slugOrId string, posts *models.Posts) 
 	if err != nil {
 		return nil, err
 	}
-	if posts == nil {
-		return nil, nil
+	if len(posts.Posts) == 0 {
+		return &models.Posts{}, nil
 	}
 	created := time.Now()
 	for i, _ := range posts.Posts {
@@ -41,6 +42,11 @@ func (u *ThreadUseCase) CreateThreadPosts(slugOrId string, posts *models.Posts) 
 				return nil, models.ErrPostNotFound
 			}
 		}
+		author, err := u.userRepo.GetUserProfile(posts.Posts[i].Author)
+		if err != nil {
+			return nil, err
+		}
+		posts.Posts[i].Author = author.Nickname
 		posts.Posts[i].Forum = thread.Forum
 		posts.Posts[i].Thread = thread.Id
 		posts.Posts[i].Created = created
@@ -83,13 +89,18 @@ func (u *ThreadUseCase) VoteForThread(slugOrId string, vote *models.Vote) (*mode
 	if err != nil {
 		return nil, err
 	}
-	_, err = u.userRepo.GetUserProfile(vote.Nickname)
+	log.Debug("before: ", thread.Votes, " voice = ", vote.Voice)
+	user, err := u.userRepo.GetUserProfile(vote.Nickname)
 	if err != nil {
 		return nil, err
 	}
+	vote.Nickname = user.Nickname
 	err = u.repository.VoteForThread(thread.Id, vote)
 	if err != nil {
 		return nil, err
 	}
-	return u.GetThreadDetails(thread.Slug)
+	updatedThread, err := u.GetThreadDetails(thread.Slug)
+	log.Debug("after: ", updatedThread.Votes)
+	return updatedThread, err
+	//return u.GetThreadDetails(thread.Slug)
 }

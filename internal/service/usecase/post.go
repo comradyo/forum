@@ -57,7 +57,7 @@ func (u *PostUseCase) UpdatePostDetails(post *models.Post) (*models.Post, error)
 	if err != nil {
 		return nil, err
 	}
-	if post.Message != postFull.Post.Message {
+	if post.Message != postFull.Post.Message && post.Message != "" {
 		post.IsEdited = true
 	} else {
 		return postFull.Post, nil
