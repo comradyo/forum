@@ -296,7 +296,7 @@ func (r *ThreadRepository) GetThreadPosts(id int32, limit string, since string, 
 	} else if sort == "tree" {
 		return r.getThreadPostsTree(id, limit, since, desc)
 	} else if sort == "parent_tree" {
-		return r.getThreadPostsFlat(id, limit, since, desc)
+		return r.getThreadPostsParentTree(id, limit, since, desc)
 	} else {
 		return nil, models.ErrDatabase
 	}
