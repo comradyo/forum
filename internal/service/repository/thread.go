@@ -264,8 +264,8 @@ func (r *ThreadRepository) getThreadPostsParentTree(id int32, limit string, sinc
 						order by path, id`
 			rows, err = r.db.Query(query, id, since, limit)
 		} else {
-			query += ` (select id from post where thread = $1 and parent = 0 order by id desc limit $2)
-						order by path[1] desc, path, id`
+			query += ` (select id from post where thread = $1 and parent = 0 order by id limit $2)
+						order by path, id`
 			rows, err = r.db.Query(query, id, limit)
 		}
 	}
