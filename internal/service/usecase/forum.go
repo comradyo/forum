@@ -83,7 +83,7 @@ func (u *ForumUseCase) GetForumUsers(slug string, limit string, since string, de
 		return nil, err
 	}
 	if limit == "" {
-		limit = "1000"
+		limit = "100"
 	}
 	return u.repository.GetForumUsers(slug, limit, since, desc)
 }
@@ -94,7 +94,7 @@ func (u *ForumUseCase) GetForumThreads(slug string, limit string, since string, 
 		return nil, err
 	}
 	if limit == "" {
-		limit = "1000"
+		limit = "100"
 	}
 	return u.repository.GetForumThreads(slug, limit, since, desc)
 }

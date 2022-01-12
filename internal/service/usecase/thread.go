@@ -73,7 +73,7 @@ func (u *ThreadUseCase) GetThreadPosts(slugOrId string, limit string, since stri
 		return nil, err
 	}
 	if limit == "" {
-		limit = "1000"
+		limit = "100"
 	}
 	return u.repository.GetThreadPosts(thread.Id, limit, since, sort, desc)
 }
