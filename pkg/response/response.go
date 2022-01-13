@@ -2,7 +2,7 @@ package response
 
 import (
 	"encoding/json"
-	log "forum/forum/pkg/logger"
+
 	"net/http"
 )
 
@@ -17,7 +17,6 @@ func SendResponse(w http.ResponseWriter, status int, body interface{}) {
 	if body != nil {
 		err := json.NewEncoder(w).Encode(body)
 		if err != nil {
-			log.Error("send_response err =", err)
 			return
 		}
 	}

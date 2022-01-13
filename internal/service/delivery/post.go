@@ -3,7 +3,7 @@ package delivery
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
-	log "forum/forum/pkg/logger"
+
 	"forum/forum/pkg/response"
 	"net/http"
 	"strconv"
@@ -24,8 +24,6 @@ func NewPostDelivery(useCase service.PostUseCaseInterface) *PostDelivery {
 }
 
 func (d *PostDelivery) GetPostDetails(w http.ResponseWriter, r *http.Request) {
-	message := postLogMessage + "GetPostDetails:"
-	log.Info(message + "started")
 	vars := mux.Vars(r)
 	id := vars["id"]
 	idInt, _ := strconv.Atoi(id)
@@ -39,7 +37,6 @@ func (d *PostDelivery) GetPostDetails(w http.ResponseWriter, r *http.Request) {
 
 	postFull, err := d.useCase.GetPostDetails(idInt64, related)
 	if err != nil {
-		log.Error(message+"error = ", err)
 		if err == models.ErrPostNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
 			return
@@ -50,18 +47,14 @@ func (d *PostDelivery) GetPostDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	//TODO: Возможно, здесь будет другая структура
 	response.SendResponse(w, http.StatusOK, postFull)
-	log.Info(message + "ended")
 	return
 }
 
 func (d *PostDelivery) UpdatePostDetails(w http.ResponseWriter, r *http.Request) {
-	message := postLogMessage + "UpdatePostDetails:"
-	log.Info(message + "started")
 	vars := mux.Vars(r)
 	id := vars["id"]
 	post, err := response.GetPostFromRequest(r.Body)
 	if err != nil {
-		log.Error(message+"error = ", err)
 		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
 		return
 	}
@@ -69,7 +62,6 @@ func (d *PostDelivery) UpdatePostDetails(w http.ResponseWriter, r *http.Request)
 	post.Id = int64(idInt)
 	updatedPost, err := d.useCase.UpdatePostDetails(post)
 	if err != nil {
-		log.Error(message+"error = ", err)
 		if err == models.ErrPostNotFound {
 			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
 			return
@@ -79,6 +71,5 @@ func (d *PostDelivery) UpdatePostDetails(w http.ResponseWriter, r *http.Request)
 		}
 	}
 	response.SendResponse(w, http.StatusOK, updatedPost)
-	log.Info(message + "ended")
 	return
 }

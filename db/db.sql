@@ -128,7 +128,15 @@ create trigger trigger_create_post
     for each row execute procedure create_post();
 -----------------------------------------
 
-insert into vote (thread, "user", voice) VALUES (2, 'dubia.WGSQyxag4Cj8jM', 100)
-returning (select votes from thread where id = vote.thread);
+/*
+-----------------------------------------
+create index if not exists index_user_on_nickname on "user"(nickname);
+-----------------------------------------
+create index if not exists index_thread_on_forum_and_created on "thread"(forum, created);
+-----------------------------------------
+create index if not exists index_post_on_thread_and_path_and_id on "post"(thread, path, id);
+create index if not exists index_post_on_thread_and_id on "post"(thread, id);
+-----------------------------------------
+create index if not exists index_forum_user_on_forum_and_nickname on "forum_user"(forum, "user");
 
-select votes from thread where id = 2;
+ */

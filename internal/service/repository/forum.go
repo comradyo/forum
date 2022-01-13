@@ -2,7 +2,6 @@ package repository
 
 import (
 	"forum/forum/internal/models"
-	log "forum/forum/pkg/logger"
 	"github.com/jackc/pgx"
 )
 
@@ -19,8 +18,7 @@ func NewForumRepository(db *pgx.ConnPool) *ForumRepository {
 }
 
 func (r *ForumRepository) CreateForum(forum *models.Forum) (*models.Forum, error) {
-	query := `insert into "forum" (title, "user", slug) values ($1, $2, $3) returning title, "user", slug, posts, threads`
-	err := r.db.QueryRow(query, forum.Title, forum.User, forum.Slug).Scan(
+	err := r.db.QueryRow("QueryCreateForum", forum.Title, forum.User, forum.Slug).Scan(
 		&forum.Title,
 		&forum.User,
 		&forum.Slug,
@@ -34,9 +32,8 @@ func (r *ForumRepository) CreateForum(forum *models.Forum) (*models.Forum, error
 }
 
 func (r *ForumRepository) GetForumDetails(slug string) (*models.Forum, error) {
-	query := `select title, "user", slug, posts, threads from "forum" where slug = $1`
 	foundForum := &models.Forum{}
-	err := r.db.QueryRow(query, slug).Scan(&foundForum.Title, &foundForum.User, &foundForum.Slug, &foundForum.Posts, &foundForum.Threads)
+	err := r.db.QueryRow("QueryGetForumDetails", slug).Scan(&foundForum.Title, &foundForum.User, &foundForum.Slug, &foundForum.Posts, &foundForum.Threads)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, models.ErrForumNotFound
@@ -48,9 +45,7 @@ func (r *ForumRepository) GetForumDetails(slug string) (*models.Forum, error) {
 }
 
 func (r *ForumRepository) CreateForumThread(thread *models.Thread) (*models.Thread, error) {
-	query := `insert into "thread" (title, author, forum, message, slug, created) values ($1, $2, $3, $4, $5, $6)
-              returning id, title, author, forum, message, votes, slug, created`
-	err := r.db.QueryRow(query, thread.Title, thread.Author, thread.Forum, thread.Message, thread.Slug, thread.Created).Scan(
+	err := r.db.QueryRow("QueryCreateForumThread", thread.Title, thread.Author, thread.Forum, thread.Message, thread.Slug, thread.Created).Scan(
 		&thread.Id,
 		&thread.Title,
 		&thread.Author,
@@ -72,30 +67,21 @@ func (r *ForumRepository) GetForumUsers(slug string, limit string, since string,
 	var rows *pgx.Rows
 	var err error
 
-	query := `select nickname, fullname, about, email from "user"
-						join forum_user on "user".nickname = forum_user."user" 
-						and forum_user.forum = $1 `
-
 	if desc == "true" {
 		if since != "" {
-			query += ` and nickname < $2 order by nickname desc limit $3`
-			rows, err = r.db.Query(query, slug, since, limit)
+			rows, err = r.db.Query("QueryGetForumUsersSinceDesc", slug, since, limit)
 		} else {
-			query += ` order by nickname desc limit $2`
-			rows, err = r.db.Query(query, slug, limit)
+			rows, err = r.db.Query("QueryGetForumUsersDesc", slug, limit)
 		}
 	} else {
 		if since != "" {
-			query += ` and nickname > $2 order by nickname limit $3`
-			rows, err = r.db.Query(query, slug, since, limit)
+			rows, err = r.db.Query("QueryGetForumUsersSince", slug, since, limit)
 		} else {
-			query += ` order by nickname limit $2`
-			rows, err = r.db.Query(query, slug, limit)
+			rows, err = r.db.Query("QueryGetForumUsers", slug, limit)
 		}
 	}
 
 	if err != nil {
-		log.Debug(err)
 		rows.Close()
 		return nil, models.ErrDatabase
 	}
@@ -116,30 +102,21 @@ func (r *ForumRepository) GetForumUsers(slug string, limit string, since string,
 
 func (r *ForumRepository) GetForumThreads(slug string, limit string, since string, desc string) (*models.Threads, error) {
 	threads := &models.Threads{}
-	query := `select * from thread where forum = $1`
 
 	var rows *pgx.Rows
 	var err error
 
 	if desc == "true" {
 		if since != "" {
-			query += ` and created <= $2 order by created desc`
-			query += ` limit $3`
-			rows, err = r.db.Query(query, slug, since, limit)
+			rows, err = r.db.Query("QueryGetForumThreadsSinceDesc", slug, since, limit)
 		} else {
-			query += ` order by created desc`
-			query += ` limit $2`
-			rows, err = r.db.Query(query, slug, limit)
+			rows, err = r.db.Query("QueryGetForumThreadsDesc", slug, limit)
 		}
 	} else {
 		if since != "" {
-			query += ` and created >= $2 order by created`
-			query += ` limit $3`
-			rows, err = r.db.Query(query, slug, since, limit)
+			rows, err = r.db.Query("QueryGetForumThreadsSince", slug, since, limit)
 		} else {
-			query += ` order by created`
-			query += ` limit $2`
-			rows, err = r.db.Query(query, slug, limit)
+			rows, err = r.db.Query("QueryGetForumThreads", slug, limit)
 		}
 	}
 

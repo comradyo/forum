@@ -3,9 +3,10 @@ package response
 import (
 	json1 "encoding/json"
 	"forum/forum/internal/models"
-	log "forum/forum/pkg/logger"
-	json "github.com/mailru/easyjson"
+
 	"io"
+
+	json "github.com/mailru/easyjson"
 )
 
 func GetForumFromRequest(r io.Reader) (*models.Forum, error) {
@@ -49,7 +50,6 @@ func GetPostsFromRequest(r io.Reader) ([]models.Post, error) {
 	decoder := json1.NewDecoder(r)
 	err := decoder.Decode(&posts)
 	if err != nil {
-		log.Error(err)
 		return nil, models.ErrJSONDecoding
 	}
 	return posts, nil

@@ -120,8 +120,7 @@ func (r *ThreadRepository) GetThreadDetails(slugOrId string) (*models.Thread, er
 }
 
 func (r *ThreadRepository) UpdateThreadDetails(id int32, thread *models.Thread) (*models.Thread, error) {
-	query := `update thread set title = $1, message = $2 where id = $3 returning id, title, author, forum, message, votes, slug, created`
-	row := r.db.QueryRow(query, thread.Title, thread.Message, id)
+	row := r.db.QueryRow("QueryUpdateThreadDetails", thread.Title, thread.Message, id)
 	err := row.Scan(
 		&thread.Id,
 		&thread.Title,
@@ -140,31 +139,21 @@ func (r *ThreadRepository) UpdateThreadDetails(id int32, thread *models.Thread) 
 
 func (r *ThreadRepository) getThreadPostsFlat(id int32, limit string, since string, desc string) (*models.Posts, error) {
 	posts := &models.Posts{}
-	query := `SELECT id, parent, author, message, is_edited, forum, thread, created 
-				from post where thread = $1`
 
 	var rows *pgx.Rows
 	var err error
 
 	if desc == "true" {
 		if since != "" {
-			query += ` and id < $2 order by id desc`
-			query += ` limit $3`
-			rows, err = r.db.Query(query, id, since, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsFlatSinceDesc", id, since, limit)
 		} else {
-			query += ` order by id desc`
-			query += ` limit $2`
-			rows, err = r.db.Query(query, id, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsFlatDesc", id, limit)
 		}
 	} else {
 		if since != "" {
-			query += ` and id > $2 order by id`
-			query += ` limit $3`
-			rows, err = r.db.Query(query, id, since, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsFlatSince", id, since, limit)
 		} else {
-			query += ` order by id`
-			query += ` limit $2`
-			rows, err = r.db.Query(query, id, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsFlat", id, limit)
 		}
 	}
 
@@ -189,31 +178,21 @@ func (r *ThreadRepository) getThreadPostsFlat(id int32, limit string, since stri
 
 func (r *ThreadRepository) getThreadPostsTree(id int32, limit string, since string, desc string) (*models.Posts, error) {
 	posts := &models.Posts{}
-	query := `SELECT id, parent, author, message, is_edited, forum, thread, created 
-				from post where thread = $1`
 
 	var rows *pgx.Rows
 	var err error
 
 	if desc == "true" {
 		if since != "" {
-			query += ` and path < (select path FROM post where id = $2) order by path desc, id desc`
-			query += ` limit $3`
-			rows, err = r.db.Query(query, id, since, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsTreeSinceDesc", id, since, limit)
 		} else {
-			query += ` order by path desc, id desc`
-			query += ` limit $2`
-			rows, err = r.db.Query(query, id, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsTreeDesc", id, limit)
 		}
 	} else {
 		if since != "" {
-			query += ` and path > (select path FROM post where id = $2) order by path, id`
-			query += ` limit $3`
-			rows, err = r.db.Query(query, id, since, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsTreeSince", id, since, limit)
 		} else {
-			query += ` order by path, id`
-			query += ` limit $2`
-			rows, err = r.db.Query(query, id, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsTree", id, limit)
 		}
 	}
 
@@ -238,33 +217,21 @@ func (r *ThreadRepository) getThreadPostsTree(id int32, limit string, since stri
 
 func (r *ThreadRepository) getThreadPostsParentTree(id int32, limit string, since string, desc string) (*models.Posts, error) {
 	posts := &models.Posts{}
-	query := `select id, parent, author, message, is_edited, forum, thread, created 
-				from post where path[1] in`
 
 	var rows *pgx.Rows
 	var err error
 
 	if desc == "true" {
 		if since != "" {
-			query += ` (select id from post where thread = $1 and parent = 0 and path[1] < 
-						(select path[1] from post where id = $2) order by id desc limit $3)
-						order by path[1] desc, path, id`
-			rows, err = r.db.Query(query, id, since, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsParentTreeSinceDesc", id, since, limit)
 		} else {
-			query += ` (select id from post where thread = $1 and parent = 0 order by id desc limit $2)
-						order by path[1] desc, path, id`
-			rows, err = r.db.Query(query, id, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsParentTreeDesc", id, limit)
 		}
 	} else {
 		if since != "" {
-			query += ` (select id from post where thread = $1 and parent = 0 and path[1] > 
-						(select path[1] from post where id = $2) order by id limit $3)
-						order by path, id`
-			rows, err = r.db.Query(query, id, since, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsParentTreeSince", id, since, limit)
 		} else {
-			query += ` (select id from post where thread = $1 and parent = 0 order by id limit $2)
-						order by path, id`
-			rows, err = r.db.Query(query, id, limit)
+			rows, err = r.db.Query("QueryGetThreadPostsParentTree", id, limit)
 		}
 	}
 
@@ -287,7 +254,6 @@ func (r *ThreadRepository) getThreadPostsParentTree(id int32, limit string, sinc
 	return posts, nil
 }
 
-//TODO: Проверить
 func (r *ThreadRepository) GetThreadPosts(id int32, limit string, since string, sort string, desc string) (*models.Posts, error) {
 	if sort == "" || sort == "flat" {
 		return r.getThreadPostsFlat(id, limit, since, desc)
@@ -301,12 +267,12 @@ func (r *ThreadRepository) GetThreadPosts(id int32, limit string, since string, 
 }
 
 func (r *ThreadRepository) VoteForThread(id int32, vote *models.Vote) error {
-	_, err := r.db.Exec(`insert into vote (thread, "user", voice) values ($1, $2, $3)`, id, vote.Nickname, vote.Voice)
+	_, err := r.db.Exec("QueryInsertVote", id, vote.Nickname, vote.Voice)
 	if err == nil {
 		return nil
 	}
 	if strings.Contains(err.Error(), "duplicate") {
-		_, err = r.db.Exec(`update vote set voice = $1 where thread = $2 and "user" = $3`, vote.Voice, id, vote.Nickname)
+		_, err = r.db.Exec("QueryUpdateVote", vote.Voice, id, vote.Nickname)
 		if err != nil {
 			return models.ErrDatabase
 		}

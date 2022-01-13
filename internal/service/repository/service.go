@@ -19,8 +19,7 @@ func NewServiceRepository(db *pgx.ConnPool) *ServiceRepository {
 }
 
 func (r *ServiceRepository) Clear() error {
-	query := `truncate forum_user, vote, post, thread, forum, "user"`
-	_, err := r.db.Exec(query)
+	_, err := r.db.Exec("QueryClear")
 	if err != nil {
 		return models.ErrDatabase
 	}
@@ -29,19 +28,19 @@ func (r *ServiceRepository) Clear() error {
 
 func (r *ServiceRepository) GetStatus() (*models.Status, error) {
 	status := &models.Status{}
-	err := r.db.QueryRow(`select count(*) from "user"`).Scan(&status.User)
+	err := r.db.QueryRow("QueryGetStatusUser").Scan(&status.User)
 	if err != nil {
 		return nil, models.ErrDatabase
 	}
-	err = r.db.QueryRow(`select count(*) from forum`).Scan(&status.Forum)
+	err = r.db.QueryRow("QueryGetStatusForum").Scan(&status.Forum)
 	if err != nil {
 		return nil, models.ErrDatabase
 	}
-	err = r.db.QueryRow(`select count(*) from thread`).Scan(&status.Thread)
+	err = r.db.QueryRow("QueryGetStatusThread").Scan(&status.Thread)
 	if err != nil {
 		return nil, models.ErrDatabase
 	}
-	err = r.db.QueryRow(`select count(*) from post`).Scan(&status.Post)
+	err = r.db.QueryRow("QueryGetStatusPost").Scan(&status.Post)
 	if err != nil {
 		return nil, models.ErrDatabase
 	}

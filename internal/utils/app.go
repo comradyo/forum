@@ -4,11 +4,11 @@ import (
 	"forum/forum/internal/service/delivery"
 	"forum/forum/internal/service/repository"
 	"forum/forum/internal/service/usecase"
-	log "forum/forum/pkg/logger"
+	database "forum/forum/internal/utils/db"
+
 	"net/http"
 
 	"github.com/jackc/pgx"
-	"github.com/sirupsen/logrus"
 )
 
 type App struct {
@@ -21,19 +21,11 @@ type App struct {
 }
 
 func NewApp() (*App, error) {
-	config := pgx.ConnConfig{
-		User:                 "postgres",
-		Database:             "postgres",
-		Password:             "password",
-		PreferSimpleProtocol: false,
+	db, err := database.NewConnPool()
+	if err != nil {
+		return nil, err
 	}
-	connPoolConfig := pgx.ConnPoolConfig{
-		ConnConfig:     config,
-		MaxConnections: 100,
-		AfterConnect:   nil,
-		AcquireTimeout: 0,
-	}
-	db, err := pgx.NewConnPool(connPoolConfig)
+	err = database.Prepare(db)
 	if err != nil {
 		return nil, err
 	}
@@ -70,13 +62,10 @@ func (a *App) Run() error {
 	if a.db != nil {
 		defer a.db.Close()
 	}
-	log.Init(logrus.DebugLevel)
-	log.Info("app started")
 	r := NewRouterForApp(a)
 	port := "5000"
 	err := http.ListenAndServe(":"+port, r)
 	if err != nil {
-		log.Error("app err = ", err)
 		return err
 	}
 	return nil

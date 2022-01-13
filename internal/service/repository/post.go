@@ -19,9 +19,8 @@ func NewPostRepository(db *pgx.ConnPool) *PostRepository {
 }
 
 func (r *PostRepository) GetPost(id int64) (*models.Post, error) {
-	query := `select id, parent, author, message, is_edited, forum, thread, created from post where id = $1`
 	foundPost := &models.Post{}
-	err := r.db.QueryRow(query, id).Scan(
+	err := r.db.QueryRow("QueryGetPost", id).Scan(
 		&foundPost.Id,
 		&foundPost.Parent,
 		&foundPost.Author,
@@ -42,10 +41,8 @@ func (r *PostRepository) GetPost(id int64) (*models.Post, error) {
 }
 
 func (r *PostRepository) UpdatePostDetails(post *models.Post) (*models.Post, error) {
-	query := `update post set message = $1, is_edited = true where id = $2 returning
-				id, parent, author, message, is_edited, forum, thread, created`
 	updatedPost := &models.Post{}
-	err := r.db.QueryRow(query, post.Message, post.Id).Scan(
+	err := r.db.QueryRow("QueryUpdatePostDetails", post.Message, post.Id).Scan(
 		&updatedPost.Id,
 		&updatedPost.Parent,
 		&updatedPost.Author,
