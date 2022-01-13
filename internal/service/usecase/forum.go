@@ -29,7 +29,7 @@ func (u *ForumUseCase) CreateForum(forum *models.Forum) (*models.Forum, error) {
 	}
 	forum.User = user.Nickname
 	if forum.Slug != "" {
-		oldForum, err := u.GetForumDetails(forum.Slug)
+		oldForum, err := u.repository.GetForumDetails(forum.Slug)
 		if err == nil {
 			return oldForum, models.ErrForumExists
 		} else if err == models.ErrForumNotFound {

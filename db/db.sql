@@ -86,8 +86,8 @@ create trigger trigger_thread_create
 -----------------------------------------
 create or replace function update_thread_votes() returns trigger as $$
 begin
-    update thread set votes = votes + new.voice where id = new.thread;
-    return null;
+    update thread set votes = (votes + new.voice) where id = new.thread;
+    return new;
 end
 $$ language 'plpgsql';
 
@@ -99,7 +99,7 @@ create trigger trigger_vote_create
 -----------------------------------------
 create or replace function change_thread_votes() returns trigger as $$
 begin
-    update thread set votes = votes - old.voice + new.voice where id = new.thread;
+    update thread set votes = (votes - old.voice + new.voice) where id = new.thread;
     return new;
 end
 $$ language 'plpgsql';
@@ -127,3 +127,8 @@ create trigger trigger_create_post
     before insert on post
     for each row execute procedure create_post();
 -----------------------------------------
+
+insert into vote (thread, "user", voice) VALUES (2, 'dubia.WGSQyxag4Cj8jM', 100)
+returning (select votes from thread where id = vote.thread);
+
+select votes from thread where id = 2;

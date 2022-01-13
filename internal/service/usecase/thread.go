@@ -3,7 +3,6 @@ package usecase
 import (
 	"forum/forum/internal/models"
 	"forum/forum/internal/service"
-	log "forum/forum/pkg/logger"
 	"time"
 )
 
@@ -24,7 +23,7 @@ func NewThreadUseCase(repository service.ThreadRepositoryInterface, userRepo ser
 }
 
 func (u *ThreadUseCase) CreateThreadPosts(slugOrId string, posts *models.Posts) (*models.Posts, error) {
-	thread, err := u.GetThreadDetails(slugOrId)
+	thread, err := u.repository.GetThreadDetails(slugOrId)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +58,7 @@ func (u *ThreadUseCase) GetThreadDetails(slugOrId string) (*models.Thread, error
 }
 
 func (u *ThreadUseCase) UpdateThreadDetails(slugOrId string, thread *models.Thread) (*models.Thread, error) {
-	oldThread, err := u.GetThreadDetails(slugOrId)
+	oldThread, err := u.repository.GetThreadDetails(slugOrId)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +73,7 @@ func (u *ThreadUseCase) UpdateThreadDetails(slugOrId string, thread *models.Thre
 }
 
 func (u *ThreadUseCase) GetThreadPosts(slugOrId string, limit string, since string, sort string, desc string) (*models.Posts, error) {
-	thread, err := u.GetThreadDetails(slugOrId)
+	thread, err := u.repository.GetThreadDetails(slugOrId)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +88,6 @@ func (u *ThreadUseCase) VoteForThread(slugOrId string, vote *models.Vote) (*mode
 	if err != nil {
 		return nil, err
 	}
-	log.Debug("before: ", thread.Votes, " voice = ", vote.Voice)
 	user, err := u.userRepo.GetUserProfile(vote.Nickname)
 	if err != nil {
 		return nil, err
@@ -99,8 +97,5 @@ func (u *ThreadUseCase) VoteForThread(slugOrId string, vote *models.Vote) (*mode
 	if err != nil {
 		return nil, err
 	}
-	updatedThread, err := u.GetThreadDetails(thread.Slug)
-	log.Debug("after: ", updatedThread.Votes)
-	return updatedThread, err
-	//return u.GetThreadDetails(thread.Slug)
+	return u.repository.GetThreadDetails(slugOrId)
 }

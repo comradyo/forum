@@ -49,7 +49,7 @@ func (u *UserUseCase) GetUserProfile(nickname string) (*models.User, error) {
 }
 
 func (u *UserUseCase) UpdateUserProfile(profile *models.User) (*models.User, error) {
-	oldProfile, err := u.GetUserProfile(profile.Nickname)
+	oldProfile, err := u.repository.GetUserProfile(profile.Nickname)
 	if err != nil {
 		return nil, err
 	}

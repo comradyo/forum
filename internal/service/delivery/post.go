@@ -5,9 +5,10 @@ import (
 	"forum/forum/internal/service"
 	log "forum/forum/pkg/logger"
 	"forum/forum/pkg/response"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 const postLogMessage = "delivery:post:"

@@ -114,7 +114,6 @@ func (r *ForumRepository) GetForumUsers(slug string, limit string, since string,
 	return users, nil
 }
 
-//TODO: Проверить работу со временем
 func (r *ForumRepository) GetForumThreads(slug string, limit string, since string, desc string) (*models.Threads, error) {
 	threads := &models.Threads{}
 	query := `select * from thread where forum = $1`

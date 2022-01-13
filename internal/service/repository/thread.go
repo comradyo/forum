@@ -3,7 +3,6 @@ package repository
 import (
 	"fmt"
 	"forum/forum/internal/models"
-	log "forum/forum/pkg/logger"
 	"strconv"
 	"strings"
 
@@ -301,26 +300,18 @@ func (r *ThreadRepository) GetThreadPosts(id int32, limit string, since string, 
 	}
 }
 
-/*
-`insert into vote (thread, "user", voice) values ($1, $2, $3)`
-`update vote set voice = $1 where thread = $2 and "user" = $3`
-*/
-
 func (r *ThreadRepository) VoteForThread(id int32, vote *models.Vote) error {
-	query := `insert into vote (thread, "user", voice) values ($1, $2, $3)`
-	_, err := r.db.Exec(query, id, vote.Nickname, vote.Voice)
-	if err != nil {
-		log.Debug("err 1 =", err)
-		if strings.Contains(err.Error(), "duplicate") {
-			query = `update vote set voice = $1 where thread = $2 and "user" = $3`
-			_, err = r.db.Exec(query, vote.Voice, id, vote.Nickname)
-			if err != nil {
-				log.Debug("err 2 =", err)
-				return models.ErrDatabase
-			}
-		} else {
+	_, err := r.db.Exec(`insert into vote (thread, "user", voice) values ($1, $2, $3)`, id, vote.Nickname, vote.Voice)
+	if err == nil {
+		return nil
+	}
+	if strings.Contains(err.Error(), "duplicate") {
+		_, err = r.db.Exec(`update vote set voice = $1 where thread = $2 and "user" = $3`, vote.Voice, id, vote.Nickname)
+		if err != nil {
 			return models.ErrDatabase
 		}
+	} else {
+		return models.ErrDatabase
 	}
 	return nil
 }

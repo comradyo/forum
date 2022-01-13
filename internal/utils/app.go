@@ -5,9 +5,10 @@ import (
 	"forum/forum/internal/service/repository"
 	"forum/forum/internal/service/usecase"
 	log "forum/forum/pkg/logger"
+	"net/http"
+
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 type App struct {
