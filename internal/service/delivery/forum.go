@@ -1,10 +1,10 @@
 package delivery
 
 import (
-	"forum/forum/internal/models"
-	"forum/forum/internal/service"
+	"forum/internal/models"
+	"forum/internal/service"
 
-	"forum/forum/pkg/response"
+	"forum/pkg/response"
 	"net/http"
 
 	"github.com/gorilla/mux"

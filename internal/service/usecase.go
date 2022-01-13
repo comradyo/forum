@@ -1,6 +1,6 @@
 package service
 
-import "forum/forum/internal/models"
+import "forum/internal/models"
 
 type ForumUseCaseInterface interface {
 	CreateForum(forum *models.Forum) (*models.Forum, error)

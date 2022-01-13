@@ -2,7 +2,7 @@ package response
 
 import (
 	json1 "encoding/json"
-	"forum/forum/internal/models"
+	"forum/internal/models"
 
 	"io"
 

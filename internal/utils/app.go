@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"forum/forum/internal/service/delivery"
-	"forum/forum/internal/service/repository"
-	"forum/forum/internal/service/usecase"
-	database "forum/forum/internal/utils/db"
+	"forum/internal/service/delivery"
+	"forum/internal/service/repository"
+	"forum/internal/service/usecase"
+	database "forum/internal/utils/db"
+	log "github.com/sirupsen/logrus"
 
 	"net/http"
 
@@ -64,6 +65,7 @@ func (a *App) Run() error {
 	}
 	r := NewRouterForApp(a)
 	port := "5000"
+	log.Debug("Forum started")
 	err := http.ListenAndServe(":"+port, r)
 	if err != nil {
 		return err

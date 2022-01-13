@@ -1,8 +1,9 @@
 package usecase
 
 import (
-	"forum/forum/internal/models"
-	"forum/forum/internal/service"
+	"forum/internal/models"
+	"forum/internal/service"
+
 	"github.com/gofrs/uuid"
 )
 

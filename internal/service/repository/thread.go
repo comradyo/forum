@@ -2,7 +2,7 @@ package repository
 
 import (
 	"fmt"
-	"forum/forum/internal/models"
+	"forum/internal/models"
 	"strconv"
 	"strings"
 

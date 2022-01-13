@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"forum/forum/internal/models"
+	"forum/internal/models"
 	"strings"
 
 	"github.com/jackc/pgx"
