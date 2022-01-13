@@ -65,7 +65,7 @@ func (a *App) Run() error {
 	}
 	r := NewRouterForApp(a)
 	port := "5000"
-	log.Debug("Forum started")
+	log.Info("forum started")
 	err := http.ListenAndServe(":"+port, r)
 	if err != nil {
 		return err

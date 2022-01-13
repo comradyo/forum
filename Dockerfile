@@ -4,7 +4,7 @@ WORKDIR /app
 RUN go build main.go
 
 #docker build -t forum .
-#docker run forum
+#docker run -p 5000:5000 forum
 #docker stop $(docker ps -a -q)
 #docker rm $(docker ps -a -q)
 
@@ -30,7 +30,6 @@ WORKDIR user/src/app
 COPY . .
 COPY --from=build /app/main .
 EXPOSE 5000
-
 
 ENV PGPASSWORD password
 CMD service postgresql start && psql -h localhost -d postgres -U postgres -p 5432 -a -q -f db/db.sql && ./main
