@@ -133,32 +133,29 @@ create trigger trigger_create_post
 
 drop index if exists index_user_on_nickname;
 drop index if exists index_user_on_email;
-drop index if exists index_forum_on_slug;
-drop index if exists index_thread_on_slug;
 
+drop index if exists index_thread_on_slug;
+drop index if exists index_thread_on_id;
+drop index if exists index_thread_on_forum;
 drop index if exists index_thread_on_forum_and_created;
+
 drop index if exists index_post_on_thread_and_path_and_id;
 drop index if exists index_post_on_parent_path_and_id;
 drop index if exists index_post_on_thread_and_id;
-
-drop index if exists index_forum_user_on_nickname;
-drop index if exists index_forum_user_on_forum_and_nickname;
 
 -----------------------------------------
 create index if not exists index_user_on_nickname on "user" using hash(nickname);
 create index if not exists index_user_on_email on "user" using hash(email);
 -----------------------------------------
-create index if not exists index_forum_on_slug on forum using hash(slug);
------------------------------------------
-create index if not exists index_thread_on_slug on forum using hash(slug);
+create index if not exists index_thread_on_slug on thread using hash(slug);
+create index if not exists index_thread_on_id on thread(id);
+create index if not exists index_thread_on_forum on thread using hash(forum);
 create index if not exists index_thread_on_forum_and_created on "thread"(forum, created);
 -----------------------------------------
 create index if not exists index_post_on_thread_and_path_and_id on "post"(thread, path);
 create index if not exists index_post_on_parent_path_and_id on "post"((path[1]), path);
 create index if not exists index_post_on_thread_and_id on "post"(thread, id);
 -----------------------------------------
-create index if not exists index_forum_user_on_nickname on "forum_user" using hash("user");
-create index if not exists index_forum_user_on_forum_and_nickname on "forum_user"(forum, "user");
 
 VACUUM;
 VACUUM ANALYSE;

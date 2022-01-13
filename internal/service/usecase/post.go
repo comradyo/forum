@@ -53,14 +53,14 @@ func (u *PostUseCase) GetPostDetails(id int64, related string) (*models.PostFull
 }
 
 func (u *PostUseCase) UpdatePostDetails(post *models.Post) (*models.Post, error) {
-	post, err := u.repository.GetPost(post.Id)
+	postFull, err := u.GetPostDetails(post.Id, "")
 	if err != nil {
 		return nil, err
 	}
-	if post.Message != post.Message && post.Message != "" {
+	if post.Message != postFull.Post.Message && post.Message != "" {
 		post.IsEdited = true
 	} else {
-		return post, nil
+		return postFull.Post, nil
 	}
 	return u.repository.UpdatePostDetails(post)
 }
