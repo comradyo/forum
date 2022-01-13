@@ -128,7 +128,6 @@ create trigger trigger_create_post
     for each row execute procedure create_post();
 -----------------------------------------
 
-
 -----------------------------------------
 
 drop index if exists index_user_on_nickname;
@@ -147,15 +146,22 @@ drop index if exists index_post_on_thread_and_id;
 create index if not exists index_user_on_nickname on "user" using hash(nickname);
 create index if not exists index_user_on_email on "user" using hash(email);
 -----------------------------------------
+create index if not exists index_forum_slug on forum using hash(slug);
+-----------------------------------------
+create index if not exists index_thread_on_created on thread(created);
 create index if not exists index_thread_on_slug on thread using hash(slug);
 create index if not exists index_thread_on_id on thread(id);
 create index if not exists index_thread_on_forum on thread using hash(forum);
 create index if not exists index_thread_on_forum_and_created on "thread"(forum, created);
 -----------------------------------------
-create index if not exists index_post_on_thread_and_path_and_id on "post"(thread, path);
+create index if not exists index_post_on_thread_and_path_and_id on "post"(thread, path, id);
 create index if not exists index_post_on_parent_path_and_id on "post"((path[1]), path);
 create index if not exists index_post_on_thread_and_id on "post"(thread, id);
+create index if not exists index_post_on_thread on "post"(thread);
 -----------------------------------------
+create unique index if not exists index_forum_user_on_forum_and_user on "forum_user"(forum, "user");
+-----------------------------------------
+create unique index if not exists index_vote on "vote"("user", thread);
 
 VACUUM;
 VACUUM ANALYSE;
