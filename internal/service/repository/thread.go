@@ -37,29 +37,6 @@ func getSlugOrId(slugOrId string) (bool, int32, string) {
 	return isId, id, slug
 }
 
-/*
-	created := time.Now()
-	for i, _ := range posts.Posts {
-		if posts.Posts[i].Parent != 0 {
-			parentPost, err := u.postRepo.GetPost(posts.Posts[i].Parent)
-			if err != nil {
-				return nil, err
-			}
-			if parentPost.Thread != thread.Id {
-				return nil, models.ErrPostNotFound
-			}
-		}
-		author, err := u.userRepo.GetUserProfile(posts.Posts[i].Author)
-		if err != nil {
-			return nil, err
-		}
-		posts.Posts[i].Author = author.Nickname
-		posts.Posts[i].Forum = thread.Forum
-		posts.Posts[i].Thread = thread.Id
-		posts.Posts[i].Created = created
-	}
-*/
-
 func (r *ThreadRepository) CreateThreadPosts(threadId int32, forum string, posts *models.Posts) (*models.Posts, error) {
 	var createdPosts models.Posts
 	var values []interface{}

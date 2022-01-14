@@ -3,8 +3,6 @@ package usecase
 import (
 	"forum/internal/models"
 	"forum/internal/service"
-	"strconv"
-	"strings"
 )
 
 const postLogMessage = "usecase:post:"
@@ -31,25 +29,7 @@ func NewPostUseCase(
 }
 
 func (u *PostUseCase) GetPostDetails(id int64, related string) (*models.PostFull, error) {
-	post, err := u.repository.GetPost(id)
-	if err != nil {
-		return nil, err
-	}
-	postFull := &models.PostFull{Post: post}
-	if strings.Contains(related, "user") {
-		user, _ := u.userRepo.GetUserProfile(post.Author)
-		postFull.Author = user
-	}
-	if strings.Contains(related, "forum") {
-		forum, _ := u.forumRepo.GetForumDetails(post.Forum)
-		postFull.Forum = forum
-	}
-	if strings.Contains(related, "thread") {
-		threadIdStr := strconv.Itoa(int(post.Thread))
-		thread, _ := u.threadRepo.GetThreadDetails(threadIdStr)
-		postFull.Thread = thread
-	}
-	return postFull, nil
+	return u.repository.GetPostFull(id, related)
 }
 
 func (u *PostUseCase) UpdatePostDetails(post *models.Post) (*models.Post, error) {

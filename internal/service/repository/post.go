@@ -2,6 +2,7 @@ package repository
 
 import (
 	"forum/internal/models"
+	"strings"
 
 	"github.com/jackc/pgx"
 )
@@ -18,7 +19,8 @@ func NewPostRepository(db *pgx.ConnPool) *PostRepository {
 	}
 }
 
-func (r *PostRepository) GetPost(id int64) (*models.Post, error) {
+func (r *PostRepository) GetPostFull(id int64, related string) (*models.PostFull, error) {
+	postFull := &models.PostFull{}
 	foundPost := &models.Post{}
 	err := r.db.QueryRow("QueryGetPost", id).Scan(
 		&foundPost.Id,
@@ -37,7 +39,32 @@ func (r *PostRepository) GetPost(id int64) (*models.Post, error) {
 			return nil, models.ErrDatabase
 		}
 	}
-	return foundPost, nil
+	postFull.Post = foundPost
+	if strings.Contains(related, "user") {
+		foundProfile := &models.User{}
+		_ = r.db.QueryRow("QueryGetUserProfile", foundPost.Author).Scan(&foundProfile.Nickname, &foundProfile.Fullname, &foundProfile.About, &foundProfile.Email)
+		postFull.Author = foundProfile
+	}
+	if strings.Contains(related, "forum") {
+		foundForum := &models.Forum{}
+		_ = r.db.QueryRow("QueryGetForumDetails", foundPost.Forum).Scan(&foundForum.Title, &foundForum.User, &foundForum.Slug, &foundForum.Posts, &foundForum.Threads)
+		postFull.Forum = foundForum
+	}
+	if strings.Contains(related, "thread") {
+		foundThread := &models.Thread{}
+		_ = r.db.QueryRow(`select * from thread where id = $1`, foundPost.Thread).Scan(
+			&foundThread.Id,
+			&foundThread.Title,
+			&foundThread.Author,
+			&foundThread.Forum,
+			&foundThread.Message,
+			&foundThread.Votes,
+			&foundThread.Slug,
+			&foundThread.Created,
+		)
+		postFull.Thread = foundThread
+	}
+	return postFull, nil
 }
 
 func (r *PostRepository) UpdatePostDetails(post *models.Post) (*models.Post, error) {

@@ -129,29 +129,25 @@ create trigger trigger_create_post
 -----------------------------------------
 
 -----------------------------------------
-
 drop index if exists index_user_on_nickname;
-drop index if exists index_user_on_email;
-
-drop index if exists index_thread_on_slug;
-drop index if exists index_thread_on_id;
-drop index if exists index_thread_on_forum;
-drop index if exists index_thread_on_forum_and_created;
-
-drop index if exists index_post_on_thread_and_path_and_id;
-drop index if exists index_post_on_parent_path_and_id;
-drop index if exists index_post_on_thread_and_id;
-
------------------------------------------
 create index if not exists index_user_on_nickname on "user" using hash(nickname);
+drop index if exists index_user_on_email;
 create index if not exists index_user_on_email on "user" using hash(email);
 -----------------------------------------
+drop index if exists index_forum_slug;
 create index if not exists index_forum_slug on forum using hash(slug);
 -----------------------------------------
+drop index if exists index_thread_on_created;
 create index if not exists index_thread_on_created on thread(created);
+drop index if exists index_thread_on_slug;
 create index if not exists index_thread_on_slug on thread using hash(slug);
-create index if not exists index_thread_on_id on thread(id);
+drop index if exists index_thread_on_forum_and_created;
+create index if not exists index_thread_on_forum_and_created on thread(forum, created);
+drop index if exists index_thread_on_forum;
 create index if not exists index_thread_on_forum on thread using hash(forum);
+
+drop index if exists index_post_on_thread;
+create index if not exists index_post_on_thread on post using hash (thread);
 
 --- +- 2150 rpc (вместе с index_post_on_parent_path_and_id)
 drop index if exists index_post_on_thread_and_path_and_id;
@@ -166,6 +162,16 @@ create index if not exists index_post_on_parent on "post"(parent, id);
 --- +- 2150 rpc
 drop index if exists index_post_on_parent_path_and_id;
 create index if not exists index_post_on_parent_path_and_id on "post"((path[1]), path);
+
+/*
+create index if not exists for_post_path_single on post ((path[1]));
+create index if not exists for_post_id_path_single on post (id, (path[1]));
+create index if not exists for_post_path on post (path);
+
+create unique index if not exists for_votes_nickname_thread_nickname on votes (thread, nickname);
+create index if not exists for_nickname_forum on nickname_forum using hash (nickname);
+create index if not exists for_nickname_forum_nickname on nickname_forum (forum, nickname);
+ */
 
 VACUUM;
 VACUUM ANALYSE;

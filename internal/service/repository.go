@@ -11,7 +11,7 @@ type ForumRepositoryInterface interface {
 }
 
 type PostRepositoryInterface interface {
-	GetPost(id int64) (*models.Post, error)
+	GetPostFull(id int64, related string) (*models.PostFull, error)
 	UpdatePostDetails(post *models.Post) (*models.Post, error)
 }
 
