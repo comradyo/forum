@@ -7,7 +7,7 @@ import (
 	"forum/pkg/response"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	routing "github.com/qiangxue/fasthttp-routing"
 )
 
 const threadLogMessage = "delivery:thread:"
@@ -22,133 +22,115 @@ func NewThreadDelivery(useCase service.ThreadUseCaseInterface) *ThreadDelivery {
 	}
 }
 
-func (d *ThreadDelivery) CreateThreadPosts(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	slugOrId := vars["slug_or_id"]
-	posts, err := response.GetPostsFromRequest(r.Body)
+func (d *ThreadDelivery) CreateThreadPosts(ctx *routing.Context) error {
+	slugOrId := ctx.Param("slug_or_id")
+	posts, err := response.GetPostsFromRequest(ctx.Request.Body())
 	if err != nil {
-		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-		return
+		response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return nil
 	}
 	newPosts, err := d.useCase.CreateThreadPosts(slugOrId, &models.Posts{Posts: posts})
 	if err != nil {
 		if err == models.ErrThreadNotFound || err == models.ErrUserNotFound {
-			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusNotFound, models.Error{Message: err.Error()})
+			return nil
 		} else if err == models.ErrPostNotFound {
-			response.SendResponse(w, http.StatusConflict, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusConflict, models.Error{Message: err.Error()})
+			return nil
 		} else {
-			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return nil
 		}
 	}
 	if len(newPosts.Posts) == 0 {
-		response.SendResponse(w, http.StatusCreated, []models.Post{})
-		return
+		response.SendResponse(ctx, http.StatusCreated, []models.Post{})
+		return nil
 	}
-	response.SendResponse(w, http.StatusCreated, newPosts.Posts)
-	return
+	response.SendResponse(ctx, http.StatusCreated, newPosts.Posts)
+	return nil
 }
 
-func (d *ThreadDelivery) GetThreadDetails(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	slugOrId := vars["slug_or_id"]
+func (d *ThreadDelivery) GetThreadDetails(ctx *routing.Context) error {
+	slugOrId := ctx.Param("slug_or_id")
 	thread, err := d.useCase.GetThreadDetails(slugOrId)
 	if err != nil {
 		if err == models.ErrThreadNotFound {
-			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusNotFound, models.Error{Message: err.Error()})
+			return nil
 		} else {
-			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return nil
 		}
 	}
-	response.SendResponse(w, http.StatusOK, thread)
-	return
+	response.SendResponse(ctx, http.StatusOK, thread)
+	return nil
 }
 
-func (d *ThreadDelivery) UpdateThreadDetails(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	slugOrId := vars["slug_or_id"]
-	thread, err := response.GetThreadFromRequest(r.Body)
+func (d *ThreadDelivery) UpdateThreadDetails(ctx *routing.Context) error {
+	slugOrId := ctx.Param("slug_or_id")
+	thread, err := response.GetThreadFromRequest(ctx.Request.Body())
 	if err != nil {
-		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-		return
+		response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return nil
 	}
 	updatedThread, err := d.useCase.UpdateThreadDetails(slugOrId, thread)
 	if err != nil {
 		if err == models.ErrThreadNotFound {
-			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusNotFound, models.Error{Message: err.Error()})
+			return nil
 		} else {
-			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return nil
 		}
 	}
-	response.SendResponse(w, http.StatusOK, updatedThread)
-	return
+	response.SendResponse(ctx, http.StatusOK, updatedThread)
+	return nil
 }
 
-func (d *ThreadDelivery) GetThreadPosts(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	slugOrId := vars["slug_or_id"]
+func (d *ThreadDelivery) GetThreadPosts(ctx *routing.Context) error {
+	slugOrId := ctx.Param("slug_or_id")
 
-	q := r.URL.Query()
-	var limit string
-	var since string
-	var sort string
-	var desc string
-	if len(q["limit"]) > 0 {
-		limit = q["limit"][0]
-	}
-	if len(q["since"]) > 0 {
-		since = q["since"][0]
-	}
-	if len(q["sort"]) > 0 {
-		sort = q["sort"][0]
-	}
-	if len(q["desc"]) > 0 {
-		desc = q["desc"][0]
-	}
+	limit := string(ctx.QueryArgs().Peek("limit"))
+	since := string(ctx.QueryArgs().Peek("since"))
+	sort := string(ctx.QueryArgs().Peek("sort"))
+	desc := string(ctx.QueryArgs().Peek("desc"))
 
 	posts, err := d.useCase.GetThreadPosts(slugOrId, limit, since, sort, desc)
 	if err != nil {
 		if err == models.ErrThreadNotFound {
-			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusNotFound, models.Error{Message: err.Error()})
+			return nil
 		} else {
-			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return nil
 		}
 	}
 
 	if len(posts.Posts) == 0 {
-		response.SendResponse(w, http.StatusOK, []models.Post{})
-		return
+		response.SendResponse(ctx, http.StatusOK, []models.Post{})
+		return nil
 	}
-	response.SendResponse(w, http.StatusOK, posts.Posts)
-	return
+	response.SendResponse(ctx, http.StatusOK, posts.Posts)
+	return nil
 }
 
-func (d *ThreadDelivery) VoteForThread(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	slugOrId := vars["slug_or_id"]
-	vote, err := response.GetVoteFromRequest(r.Body)
+func (d *ThreadDelivery) VoteForThread(ctx *routing.Context) error {
+	slugOrId := ctx.Param("slug_or_id")
+	vote, err := response.GetVoteFromRequest(ctx.Request.Body())
 	if err != nil {
-		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-		return
+		response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return nil
 	}
 	thread, err := d.useCase.VoteForThread(slugOrId, vote)
 	if err != nil {
 		if err == models.ErrThreadNotFound || err == models.ErrUserNotFound {
-			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusNotFound, models.Error{Message: err.Error()})
+			return nil
 		} else {
-			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return nil
 		}
 	}
-	response.SendResponse(w, http.StatusOK, thread)
-	return
+	response.SendResponse(ctx, http.StatusOK, thread)
+	return nil
 }

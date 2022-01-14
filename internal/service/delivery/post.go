@@ -5,10 +5,9 @@ import (
 	"forum/internal/service"
 
 	"forum/pkg/response"
+	routing "github.com/qiangxue/fasthttp-routing"
 	"net/http"
 	"strconv"
-
-	"github.com/gorilla/mux"
 )
 
 const postLogMessage = "delivery:post:"
@@ -23,53 +22,47 @@ func NewPostDelivery(useCase service.PostUseCaseInterface) *PostDelivery {
 	}
 }
 
-func (d *PostDelivery) GetPostDetails(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+func (d *PostDelivery) GetPostDetails(ctx *routing.Context) error {
+	id := ctx.Param("id")
 	idInt, _ := strconv.Atoi(id)
 	idInt64 := int64(idInt)
 
-	q := r.URL.Query()
-	var related string
-	if len(q["related"]) > 0 {
-		related = q["related"][0]
-	}
+	related := string(ctx.QueryArgs().Peek("related"))
 
 	postFull, err := d.useCase.GetPostDetails(idInt64, related)
 	if err != nil {
 		if err == models.ErrPostNotFound {
-			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusNotFound, models.Error{Message: err.Error()})
+			return nil
 		} else {
-			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return nil
 		}
 	}
 	//TODO: Возможно, здесь будет другая структура
-	response.SendResponse(w, http.StatusOK, postFull)
-	return
+	response.SendResponse(ctx, http.StatusOK, postFull)
+	return nil
 }
 
-func (d *PostDelivery) UpdatePostDetails(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-	post, err := response.GetPostFromRequest(r.Body)
+func (d *PostDelivery) UpdatePostDetails(ctx *routing.Context) error {
+	id := ctx.Param("id")
+	post, err := response.GetPostFromRequest(ctx.Request.Body())
 	if err != nil {
-		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-		return
+		response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return nil
 	}
 	idInt, _ := strconv.Atoi(id)
 	post.Id = int64(idInt)
 	updatedPost, err := d.useCase.UpdatePostDetails(post)
 	if err != nil {
 		if err == models.ErrPostNotFound {
-			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusNotFound, models.Error{Message: err.Error()})
+			return nil
 		} else {
-			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return nil
 		}
 	}
-	response.SendResponse(w, http.StatusOK, updatedPost)
-	return
+	response.SendResponse(ctx, http.StatusOK, updatedPost)
+	return nil
 }

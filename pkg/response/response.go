@@ -2,8 +2,7 @@ package response
 
 import (
 	"encoding/json"
-
-	"net/http"
+	routing "github.com/qiangxue/fasthttp-routing"
 )
 
 type Response struct {
@@ -11,11 +10,11 @@ type Response struct {
 	Body   interface{}
 }
 
-func SendResponse(w http.ResponseWriter, status int, body interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+func SendResponse(ctx *routing.Context, status int, body interface{}) {
+	ctx.Response.SetStatusCode(status)
+	ctx.Response.Header.Set("Content-Type", "application/json")
 	if body != nil {
-		err := json.NewEncoder(w).Encode(body)
+		err := json.NewEncoder(ctx.Response.BodyWriter()).Encode(body)
 		if err != nil {
 			return
 		}

@@ -6,8 +6,7 @@ import (
 	"forum/internal/service/usecase"
 	database "forum/internal/utils/db"
 	log "github.com/sirupsen/logrus"
-
-	"net/http"
+	"github.com/valyala/fasthttp"
 
 	"github.com/jackc/pgx"
 )
@@ -64,11 +63,7 @@ func (a *App) Run() error {
 		defer a.db.Close()
 	}
 	r := NewRouterForApp(a)
-	port := "5000"
 	log.Info("forum started")
-	err := http.ListenAndServe(":"+port, r)
-	if err != nil {
-		return err
-	}
+	panic(fasthttp.ListenAndServe(":5000", r.HandleRequest))
 	return nil
 }

@@ -3,11 +3,10 @@ package delivery
 import (
 	"forum/internal/models"
 	"forum/internal/service"
-
 	"forum/pkg/response"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	routing "github.com/qiangxue/fasthttp-routing"
 )
 
 const userLogMessage = "delivery:user:"
@@ -22,68 +21,67 @@ func NewUserDelivery(useCase service.UserUseCaseInterface) *UserDelivery {
 	}
 }
 
-func (d *UserDelivery) CreateUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	nickname := vars["nickname"]
-	profile, err := response.GetProfileFromRequest(r.Body)
+func (d *UserDelivery) CreateUser(ctx *routing.Context) error {
+	nickname := ctx.Param("nickname")
+
+	ctx.Request.Body()
+	profile, err := response.GetProfileFromRequest(ctx.PostBody())
 	if err != nil {
-		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-		return
+		response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return nil
 	}
 	profile.Nickname = nickname
 	users, err := d.useCase.CreateUser(profile)
 	if err != nil {
 		if err == models.ErrUserExists {
-			response.SendResponse(w, http.StatusConflict, users)
-			return
+			response.SendResponse(ctx, http.StatusConflict, users)
+			return nil
 		} else {
-			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return nil
 		}
 	}
-	response.SendResponse(w, http.StatusCreated, users[0])
-	return
+	response.SendResponse(ctx, http.StatusCreated, users[0])
+	return nil
 }
 
-func (d *UserDelivery) GetUserProfile(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	nickname := vars["nickname"]
+func (d *UserDelivery) GetUserProfile(ctx *routing.Context) error {
+	nickname := ctx.Param("nickname")
 	profile, err := d.useCase.GetUserProfile(nickname)
 	if err != nil {
 		if err == models.ErrUserNotFound {
-			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusNotFound, models.Error{Message: err.Error()})
+			return nil
 		} else {
-			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return nil
 		}
 	}
-	response.SendResponse(w, http.StatusOK, profile)
-	return
+	response.SendResponse(ctx, http.StatusOK, profile)
+	return nil
 }
 
-func (d *UserDelivery) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	nickname := vars["nickname"]
-	profile, err := response.GetProfileFromRequest(r.Body)
+func (d *UserDelivery) UpdateUserProfile(ctx *routing.Context) error {
+	nickname := ctx.Param("nickname")
+	profile, err := response.GetProfileFromRequest(ctx.Request.Body())
 	if err != nil {
-		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-		return
+		response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return nil
 	}
 	profile.Nickname = nickname
 	updatedProfile, err := d.useCase.UpdateUserProfile(profile)
 	if err != nil {
 		if err == models.ErrUserNotFound {
-			response.SendResponse(w, http.StatusNotFound, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusNotFound, models.Error{Message: err.Error()})
+			return nil
 		} else if err == models.ErrProfileUpdateConflict {
-			response.SendResponse(w, http.StatusConflict, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusConflict, models.Error{Message: err.Error()})
+			return nil
 		} else {
-			response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-			return
+			response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+			return nil
 		}
 	}
-	response.SendResponse(w, http.StatusOK, updatedProfile)
-	return
+	response.SendResponse(ctx, http.StatusOK, updatedProfile)
+	return nil
 }

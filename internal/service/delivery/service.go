@@ -6,6 +6,8 @@ import (
 
 	"forum/pkg/response"
 	"net/http"
+
+	routing "github.com/qiangxue/fasthttp-routing"
 )
 
 const serviceLogMessage = "delivery:service:"
@@ -20,22 +22,22 @@ func NewServiceDelivery(useCase service.ServiceUseCaseInterface) *ServiceDeliver
 	}
 }
 
-func (d *ServiceDelivery) Clear(w http.ResponseWriter, r *http.Request) {
+func (d *ServiceDelivery) Clear(ctx *routing.Context) error {
 	err := d.useCase.Clear()
 	if err != nil {
-		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-		return
+		response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return nil
 	}
-	response.SendResponse(w, http.StatusOK, nil)
-	return
+	response.SendResponse(ctx, http.StatusOK, nil)
+	return nil
 }
 
-func (d *ServiceDelivery) GetStatus(w http.ResponseWriter, r *http.Request) {
+func (d *ServiceDelivery) GetStatus(ctx *routing.Context) error {
 	status, err := d.useCase.GetStatus()
 	if err != nil {
-		response.SendResponse(w, http.StatusInternalServerError, models.Error{Message: err.Error()})
-		return
+		response.SendResponse(ctx, http.StatusInternalServerError, models.Error{Message: err.Error()})
+		return nil
 	}
-	response.SendResponse(w, http.StatusOK, status)
-	return
+	response.SendResponse(ctx, http.StatusOK, status)
+	return nil
 }

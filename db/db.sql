@@ -146,13 +146,15 @@ create index if not exists index_thread_on_forum_and_created on thread(forum, cr
 drop index if exists index_thread_on_forum;
 create index if not exists index_thread_on_forum on thread using hash(forum);
 
+---
+drop index if exists index_post_on_id;
+create unique index if not exists index_post_on_id ON post(id);
+---
 drop index if exists index_post_on_thread;
 create index if not exists index_post_on_thread on post using hash (thread);
-
 --- +- 2150 rpc (вместе с index_post_on_parent_path_and_id)
 drop index if exists index_post_on_thread_and_path_and_id;
 create index if not exists index_thread_on_forum_and_created on "thread"(forum, created);
-
 --- +- 2150 rpc (вместе с index_post_on_parent_path_and_id)
 drop index if exists index_post_on_thread_and_path_and_id;
 create index if not exists index_post_on_thread_and_path_and_id on "post"(thread, path, id);
@@ -160,8 +162,15 @@ create index if not exists index_post_on_thread_and_path_and_id on "post"(thread
 drop index if exists index_post_on_parent;
 create index if not exists index_post_on_parent on "post"(parent, id);
 --- +- 2150 rpc
-drop index if exists index_post_on_parent_path_and_id;
-create index if not exists index_post_on_parent_path_and_id on "post"((path[1]), path);
+drop index if exists index_post_on_parent_path_and_path;
+create index if not exists index_post_on_parent_path_and_path on "post"((path[1]), path);
+---
+drop index if exists index_post_on_parent_path_and_path_and_id;
+create index if not exists  index_post_on_parent_path_and_path_and_id ON post ((path[1]), path, id);
+---
+drop index if exists index_post_on_parent_and_thread;
+create index if not exists index_post_on_parent_and_thread ON post(parent, thread);
+
 
 VACUUM;
 VACUUM ANALYSE;
