@@ -5,6 +5,7 @@ import (
 	"forum/internal/models"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx"
 )
@@ -36,53 +37,71 @@ func getSlugOrId(slugOrId string) (bool, int32, string) {
 	return isId, id, slug
 }
 
-func (r *ThreadRepository) CreateThreadPosts(id int32, posts *models.Posts) (*models.Posts, error) {
-	createdPosts := &models.Posts{}
+/*
+	created := time.Now()
+	for i, _ := range posts.Posts {
+		if posts.Posts[i].Parent != 0 {
+			parentPost, err := u.postRepo.GetPost(posts.Posts[i].Parent)
+			if err != nil {
+				return nil, err
+			}
+			if parentPost.Thread != thread.Id {
+				return nil, models.ErrPostNotFound
+			}
+		}
+		author, err := u.userRepo.GetUserProfile(posts.Posts[i].Author)
+		if err != nil {
+			return nil, err
+		}
+		posts.Posts[i].Author = author.Nickname
+		posts.Posts[i].Forum = thread.Forum
+		posts.Posts[i].Thread = thread.Id
+		posts.Posts[i].Created = created
+	}
+*/
 
-	query := `insert into post (parent, author, message, forum, thread, created) values`
+func (r *ThreadRepository) CreateThreadPosts(threadId int32, forum string, posts *models.Posts) (*models.Posts, error) {
+	var createdPosts models.Posts
 	var values []interface{}
 
+	query := `insert into post (parent, author, message, forum, thread, created) values `
+	created := time.Now()
 	for i, post := range posts.Posts {
-		valuesNumbers := fmt.Sprintf(
-			"($%d, $%d, $%d, $%d, $%d, $%d),",
-			i*6+1,
-			i*6+2,
-			i*6+3,
-			i*6+4,
-			i*6+5,
-			i*6+6,
-		)
-		query += valuesNumbers
-		values = append(values, post.Parent, post.Author, post.Message, post.Forum, post.Thread, post.Created)
+		author := ""
+		err := r.db.QueryRow(`select nickname from "user" where nickname = $1`, post.Author).Scan(&author)
+		if err == pgx.ErrNoRows {
+			return nil, models.ErrUserNotFound
+		}
+		if post.Parent != 0 {
+			id := -1
+			err := r.db.QueryRow(`select id from post where thread = $1 and id = $2`, threadId, post.Parent).Scan(&id)
+			if err == pgx.ErrNoRows {
+				return nil, models.ErrPostNotFound
+			}
+		}
+		valuesString := fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d),", i*6+1, i*6+2, i*6+3, i*6+4, i*6+5, i*6+6)
+		query += valuesString
+		values = append(values, post.Parent, post.Author, post.Message, forum, threadId, created)
 	}
 	query = strings.TrimSuffix(query, ",")
-	query += ` returning id, parent, author, message, is_edited, forum, thread, created`
-
+	query += ` returning id, parent, author, message, is_edited, forum, thread, created;`
 	rows, err := r.db.Query(query, values...)
 	if err != nil {
-		rows.Close()
 		return nil, models.ErrDatabase
 	}
+	defer rows.Close()
 	for rows.Next() {
-		post := &models.Post{}
-		err := rows.Scan(
-			&post.Id,
-			&post.Parent,
-			&post.Author,
-			&post.Message,
-			&post.IsEdited,
-			&post.Forum,
-			&post.Thread,
-			&post.Created,
-		)
-		if err != nil {
-			rows.Close()
+		post := models.Post{}
+		err := rows.Scan(&post.Id, &post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum, &post.Thread, &post.Created)
+		if err != nil || post.Author == "" {
 			return nil, models.ErrDatabase
 		}
-		createdPosts.Posts = append(createdPosts.Posts, *post)
+		createdPosts.Posts = append(createdPosts.Posts, post)
 	}
-	rows.Close()
-	return createdPosts, nil
+	if len(createdPosts.Posts) == 0 {
+		return nil, models.ErrDatabase
+	}
+	return &createdPosts, nil
 }
 
 func (r *ThreadRepository) GetThreadDetails(slugOrId string) (*models.Thread, error) {

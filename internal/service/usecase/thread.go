@@ -3,7 +3,6 @@ package usecase
 import (
 	"forum/internal/models"
 	"forum/internal/service"
-	"time"
 )
 
 const threadLogMessage = "usecase:thread:"
@@ -30,27 +29,7 @@ func (u *ThreadUseCase) CreateThreadPosts(slugOrId string, posts *models.Posts) 
 	if len(posts.Posts) == 0 {
 		return &models.Posts{}, nil
 	}
-	created := time.Now()
-	for i, _ := range posts.Posts {
-		if posts.Posts[i].Parent != 0 {
-			parentPost, err := u.postRepo.GetPost(posts.Posts[i].Parent)
-			if err != nil {
-				return nil, err
-			}
-			if parentPost.Thread != thread.Id {
-				return nil, models.ErrPostNotFound
-			}
-		}
-		author, err := u.userRepo.GetUserProfile(posts.Posts[i].Author)
-		if err != nil {
-			return nil, err
-		}
-		posts.Posts[i].Author = author.Nickname
-		posts.Posts[i].Forum = thread.Forum
-		posts.Posts[i].Thread = thread.Id
-		posts.Posts[i].Created = created
-	}
-	return u.repository.CreateThreadPosts(thread.Id, posts)
+	return u.repository.CreateThreadPosts(thread.Id, thread.Forum, posts)
 }
 
 func (u *ThreadUseCase) GetThreadDetails(slugOrId string) (*models.Thread, error) {

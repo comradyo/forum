@@ -21,7 +21,7 @@ type ServiceRepositoryInterface interface {
 }
 
 type ThreadRepositoryInterface interface {
-	CreateThreadPosts(id int32, posts *models.Posts) (*models.Posts, error)
+	CreateThreadPosts(forumId int32, thread string, posts *models.Posts) (*models.Posts, error)
 	GetThreadDetails(slugOrId string) (*models.Thread, error)
 	UpdateThreadDetails(id int32, thread *models.Thread) (*models.Thread, error)
 	GetThreadPosts(id int32, limit string, since string, sort string, desc string) (*models.Posts, error)
