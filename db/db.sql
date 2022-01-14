@@ -163,15 +163,5 @@ create index if not exists index_post_on_parent on "post"(parent, id);
 drop index if exists index_post_on_parent_path_and_id;
 create index if not exists index_post_on_parent_path_and_id on "post"((path[1]), path);
 
-/*
-create index if not exists for_post_path_single on post ((path[1]));
-create index if not exists for_post_id_path_single on post (id, (path[1]));
-create index if not exists for_post_path on post (path);
-
-create unique index if not exists for_votes_nickname_thread_nickname on votes (thread, nickname);
-create index if not exists for_nickname_forum on nickname_forum using hash (nickname);
-create index if not exists for_nickname_forum_nickname on nickname_forum (forum, nickname);
- */
-
 VACUUM;
 VACUUM ANALYSE;
