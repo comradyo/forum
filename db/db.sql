@@ -145,6 +145,8 @@ drop index if exists index_thread_on_forum_and_created;
 create index if not exists index_thread_on_forum_and_created on thread(forum, created);
 drop index if exists index_thread_on_forum;
 create index if not exists index_thread_on_forum on thread using hash(forum);
+drop index if exists thread_on_id_and_forum;
+create index if not exists thread_on_id_and_forum ON thread(id, forum);
 
 ---
 drop index if exists index_post_on_id;
